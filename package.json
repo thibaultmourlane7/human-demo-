@@ -4,10 +4,11 @@
   "version": "0.5.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "cp index.source.html index.html && vite",
+    "build": "cp index.source.html index.html && npm run build:raw",
     "preview": "vite preview",
-    "check:public": "node scripts/check-public-boundary.mjs"
+    "check:public": "node scripts/check-public-boundary.mjs",
+    "build:raw": "tsc -b && vite build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

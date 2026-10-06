@@ -1,0 +1,45 @@
+name: Publish compiled demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'index.source.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tsconfig*.json'
+      - '.env.production'
+      - '.github/workflows/publish-compiled-demo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm run check:public
+      - run: npm run build
+      - name: Publish compiled files into Pages root
+        run: |
+          rm -rf assets
+          cp dist/index.html index.html
+          cp -R dist/assets assets
+          touch .nojekyll
+      - name: Commit compiled demo
+        run: |
+          git config user.name "HUMAN Demo Publisher"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A index.html assets .nojekyll
+          git commit -m "Publish compiled HUMAN demo" || exit 0
+          git push origin main
