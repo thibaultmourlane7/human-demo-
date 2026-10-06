@@ -1,22 +1,26 @@
 # HUMAN — Public Demo
 
-Démo publique du concept HUMAN : une IA peut escalader une question vers un expert humain vérifié.
+Interface publique de HUMAN : une infrastructure permettant à une IA ou à un utilisateur d'escalader une question vers un expert humain qualifié.
 
-## Important
+## Sprint 4
 
-Ce dépôt est volontairement **sans backend réel, sans clé privée, sans schéma Supabase sensible et sans donnée utilisateur réelle**.
+La démo est maintenant reliée au vrai projet Supabase HUMAN avec uniquement des éléments prévus pour le navigateur :
 
-Le dépôt privé `human-internal` contient les migrations, les politiques RLS et la future logique serveur.
+- inscription / connexion Supabase Auth ;
+- création d'une mission réelle ;
+- déclenchement du matching ;
+- historique des missions utilisateur ;
+- création du profil expert ;
+- état de vérification et disponibilité ;
+- propositions de missions ;
+- accepter / refuser ;
+- démarrer une intervention ;
+- envoyer la réponse experte ;
+- validation et clôture côté utilisateur.
 
-## Sprint 1
+Le frontend ne contient ni migrations, ni logique de pricing, ni logique dataset, ni clé serveur. Toutes les commandes métier passent par l'Edge Function privée `human-command`.
 
-- React + TypeScript + Vite
-- parcours visuel utilisateur → HUMAN → expert
-- matching simulé localement
-- réponse expert simulée
-- contrôle automatisé empêchant l'ajout de secrets et de chemins privés
-
-## Lancer localement
+## Lancer
 
 ```bash
 npm install
@@ -24,4 +28,4 @@ npm run check:public
 npm run dev
 ```
 
-Ne jamais ajouter de secret dans une variable `VITE_*` : tout ce qui est exposé au frontend est public.
+La Supabase publishable key est une configuration frontend publique. Les clés serveur ne doivent jamais apparaître dans ce dépôt.
