@@ -21,7 +21,7 @@ jobs:
           cat .bootstrap/part-*.b64 | tr -d '\n' | base64 -d > /tmp/human-demo.tar.gz
           mkdir -p /tmp/human-demo-source
           tar -xzf /tmp/human-demo.tar.gz -C /tmp/human-demo-source
-          rsync -a --delete --exclude '.git/' /tmp/human-demo-source/human-demo/ ./
+          rsync -a --delete --exclude '.git/' --exclude '.github/workflows/' /tmp/human-demo-source/human-demo/ ./
       - name: Commit extracted source
         run: |
           git config user.name "HUMAN Bootstrap"
