@@ -89,14 +89,30 @@ export default function App() {
 
   return <main>
     <header className="topbar">
-      <div><strong>HUMAN</strong><span>Human fallback for AI</span></div>
+      <div className="brand-lockup">
+        <div className="brand-mark" aria-hidden="true"><span>H</span><i /></div>
+        <div className="brand-copy"><strong>HUMAN</strong><span>Human fallback infrastructure</span></div>
+      </div>
       {session && <div className="top-actions"><span>{session.user.email}</span><button className="secondary-button" onClick={() => supabase.auth.signOut()}>Déconnexion</button></div>}
     </header>
 
-    <section className="hero compact-hero">
-      <div className="hero-badge">HUMAN · SPRINT 5</div>
-      <h1>Quand l’IA atteint sa limite, <span>HUMAN appelle la bonne personne.</span></h1>
-      <p>Compte réel, matching sécurisé et désormais une conversation privée en temps réel entre l’utilisateur et l’expert sélectionné.</p>
+    <section className="hero compact-hero human-hero">
+      <div className="hero-copy">
+        <div className="hero-badge">HUMAN / SIGNAL 05</div>
+        <h1>L’IA bloque.<br/><span>Un humain prend le relais.</span></h1>
+        <p>Une infrastructure qui connecte les intelligences artificielles à des experts qualifiés quand la certitude ne suffit plus.</p>
+        <div className="relay-strip" aria-label="Flux HUMAN">
+          <span>AI</span><b>→</b><span className="fault">?</span><b>→</b><span className="human-node">HUMAN</span><b>→</b><span>EXPERT</span>
+        </div>
+      </div>
+      <div className="signal-stage" aria-hidden="true">
+        <div className="signal-grid" />
+        <div className="signal-ring ring-a" />
+        <div className="signal-ring ring-b" />
+        <div className="signal-ring ring-c" />
+        <div className="signal-core"><span>H</span><small>LIVE</small></div>
+        <div className="signal-caption"><span>ESCALATION</span><strong>HUMAN<br/>RELAY</strong><em>QUALIFIED / VERIFIED</em></div>
+      </div>
     </section>
 
     {!session ? <AuthPanel /> : !dashboard ? <section className="panel auth-shell"><div className="spinner" /><p>Chargement de votre espace HUMAN…</p></section> : <>
