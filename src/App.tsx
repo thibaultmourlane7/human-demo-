@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthPanel } from './components/AuthPanel';
 import { ExpertProfileForm } from './components/ExpertProfileForm';
+import { MessageThread } from './components/MessageThread';
 import { RequestForm } from './components/RequestForm';
 import type { HumanDashboard, HumanJob, HumanRequestDetail, HumanRequestInput } from './domain/request';
 import { humanConfigReady, supabase } from './lib/supabase';
@@ -93,9 +94,9 @@ export default function App() {
     </header>
 
     <section className="hero compact-hero">
-      <div className="hero-badge">HUMAN · SPRINT 4</div>
+      <div className="hero-badge">HUMAN · SPRINT 5</div>
       <h1>Quand l’IA atteint sa limite, <span>HUMAN appelle la bonne personne.</span></h1>
-      <p>Compte réel, missions réelles, matching sécurisé et espace expert connecté au backend privé HUMAN.</p>
+      <p>Compte réel, matching sécurisé et désormais une conversation privée en temps réel entre l’utilisateur et l’expert sélectionné.</p>
     </section>
 
     {!session ? <AuthPanel /> : !dashboard ? <section className="panel auth-shell"><div className="spinner" /><p>Chargement de votre espace HUMAN…</p></section> : <>
@@ -146,6 +147,7 @@ function UserArea({ dashboard, busy, createRequest, openRequest, selected, sessi
       <p className="question-box">{selected.content.question}</p>
       {selected.content.context && <p className="muted">Contexte : {selected.content.context}</p>}
       <div className="status-row"><span>Statut</span><strong>{statusLabel[selected.request.status] || selected.request.status}</strong></div>
+      <MessageThread session={session} requestId={selected.request.id} canSend={['accepted', 'in_progress', 'answered'].includes(selected.request.status)} defaultOpen />
       {selected.result?.expert_answer && <div className="answer-card"><small>Réponse de l’expert</small><p>{selected.result.expert_answer}</p></div>}
       {selected.request.status === 'answered' && selected.result?.expert_answer && <div className="button-row">
         <button className="primary-button" disabled={busy} onClick={() => run(async () => {
@@ -199,6 +201,7 @@ function ExpertArea({ dashboard, session, busy, run, refresh, answerDraft, setAn
       {!expert.jobs.length && <p className="muted">Aucune intervention en cours.</p>}
       {expert.jobs.map((job: HumanJob) => <article className="job-card" key={job.request_id}>
         <div className="status-row"><span>{job.category_label}</span><strong>{statusLabel[job.status] || job.status}</strong></div><h3>{job.question}</h3>{job.context && <p className="muted">{job.context}</p>}
+        <MessageThread session={session} requestId={job.request_id} canSend={['accepted', 'in_progress', 'answered'].includes(job.status)} />
         {job.status === 'accepted' && <button className="primary-button" disabled={busy} onClick={() => run(() => humanApi.startIntervention(session, job.request_id))}>Démarrer l’intervention</button>}
         {job.status === 'in_progress' && <div className="answer-editor"><textarea rows={5} value={answerDraft} onChange={(e) => setAnswerDraft(e.target.value)} placeholder="Rédigez la réponse experte…" /><button className="primary-button" disabled={busy || answerDraft.trim().length < 2} onClick={() => run(async () => { await humanApi.submitAnswer(session, job.request_id, answerDraft); setAnswerDraft(''); })}>Envoyer la réponse</button></div>}
         {job.expert_answer && <div className="answer-card"><small>Réponse envoyée</small><p>{job.expert_answer}</p></div>}

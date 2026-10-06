@@ -3,6 +3,7 @@ import type {
   HumanDashboard,
   HumanRequestDetail,
   HumanRequestInput,
+  HumanMessage,
 } from '../domain/request';
 
 const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -36,6 +37,12 @@ export const humanApi = {
 
   getRequestDetail: (session: Session, requestId: string) =>
     command<HumanRequestDetail>(session, 'get_request_detail', { requestId }),
+
+  getMessages: (session: Session, requestId: string) =>
+    command<HumanMessage[]>(session, 'get_messages', { requestId }),
+
+  sendMessage: (session: Session, requestId: string, message: string) =>
+    command<HumanMessage>(session, 'send_message', { requestId, message }),
 
   saveExpertProfile: (session: Session, input: {
     profession: string;

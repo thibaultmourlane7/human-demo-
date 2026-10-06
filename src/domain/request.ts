@@ -103,3 +103,12 @@ export interface HumanRequestDetail {
     validated_at: string | null;
   };
 }
+
+export interface HumanMessage {
+  id: string;
+  request_id: string;
+  sender_kind: 'user' | 'expert' | 'admin';
+  is_mine: boolean;
+  message: string;
+  created_at: string;
+}
