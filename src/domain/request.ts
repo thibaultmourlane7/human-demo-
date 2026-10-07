@@ -178,3 +178,76 @@ export interface HumanAdminDashboard {
   requests: HumanAdminRequest[];
   events: HumanAdminEvent[];
 }
+
+
+export type HumanPaymentState = 'quoted' | 'reserved' | 'settled' | 'refunded';
+
+export interface HumanFinanceWallet {
+  id: string;
+  kind: 'user' | 'expert' | 'platform';
+  available_cents: number;
+  reserved_cents: number;
+  currency_code: string;
+}
+
+export interface HumanFinanceRequest {
+  request_id: string;
+  quote_id?: string;
+  state: HumanPaymentState;
+  total_cents: number;
+  expert_compensation_cents?: number;
+  human_commission_cents?: number;
+  currency_code: string;
+  reserved_at?: string | null;
+  settled_at?: string | null;
+  refunded_at?: string | null;
+  quote_valid_until?: string | null;
+  quote_accepted_at?: string | null;
+}
+
+export interface HumanPricingPolicy {
+  id: string;
+  code: string;
+  version: number;
+  active: boolean;
+  model: 'fixed' | 'per_minute' | 'hybrid' | 'custom';
+  category_code: HumanCategory;
+  base_price_cents: number;
+  expert_compensation_cents: number;
+  urgent_surcharge_cents: number;
+  currency_code: string;
+}
+
+export interface HumanFinanceAccount {
+  user_id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  role: 'user' | 'expert' | 'admin';
+  wallet_kind: 'user' | 'expert';
+  available_cents: number;
+  reserved_cents: number;
+  currency_code: string;
+}
+
+export interface HumanFinanceDashboard {
+  wallet: HumanFinanceWallet;
+  ledger: Array<{
+    id: string;
+    request_id: string | null;
+    entry_type: string;
+    delta_available_cents: number;
+    delta_reserved_cents: number;
+    balance_available_after_cents: number;
+    balance_reserved_after_cents: number;
+    created_at: string;
+  }>;
+  requests: HumanFinanceRequest[];
+  policies: HumanPricingPolicy[];
+  platform: null | {
+    available_cents: number;
+    reserved_cents: number;
+    currency_code: string;
+  };
+  accounts: HumanFinanceAccount[];
+}
