@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import type { HumanCategory, HumanFinanceDashboard } from '../domain/request';
+import type { HumanCategory, HumanFinanceDashboard, HumanTopup } from '../domain/request';
 import { humanApi } from '../services/humanApi';
 
 interface Props {
@@ -17,6 +17,17 @@ const categoryLabel: Record<HumanCategory, string> = {
   development: 'Développement logiciel',
 };
 
+const topupStatusLabel: Record<string, string> = {
+  created: 'Créée',
+  checkout_created: 'Paiement en cours',
+  paid: 'Payée',
+  failed: 'Échec',
+  expired: 'Expirée',
+  refund_requested: 'Remboursement demandé',
+  refunded: 'Remboursée',
+  refund_review: 'À vérifier',
+};
+
 function euros(cents: number, currency = 'EUR') {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100);
 }
@@ -30,13 +41,62 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
   const [target, setTarget] = useState('');
   const [credit, setCredit] = useState('100');
   const [reason, setReason] = useState('Crédits de test HUMAN');
+  const [topupAmount, setTopupAmount] = useState('20');
+  const [topups, setTopups] = useState<HumanTopup[]>([]);
   const [busy, setBusy] = useState(false);
+  const [topupBusy, setTopupBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedAccount = useMemo(
     () => finance?.accounts.find((item) => item.user_id === target) ?? null,
     [finance, target],
   );
+
+  const returnState = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('topup')
+    : null;
+
+  async function refreshTopups() {
+    if (role === 'expert') return;
+    try {
+      setTopups(await humanApi.getTopups(session));
+    } catch {
+      // Finance remains usable even if history is temporarily unavailable.
+    }
+  }
+
+  useEffect(() => {
+    if (role === 'expert') return;
+    let cancelled = false;
+    let attempts = 0;
+
+    const load = async () => {
+      try {
+        const data = await humanApi.getTopups(session);
+        if (!cancelled) setTopups(data);
+        if (returnState === 'success') await onRefresh();
+      } catch {
+        // Polling is best-effort; actionable errors surface on explicit user actions.
+      }
+    };
+
+    void load();
+
+    if (returnState !== 'success') {
+      return () => { cancelled = true; };
+    }
+
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      void load();
+      if (attempts >= 8) window.clearInterval(timer);
+    }, 2500);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [session.access_token, role, returnState]);
 
   if (!finance) {
     return <section className="panel finance-panel"><div className="spinner" /><strong>Chargement finances…</strong></section>;
@@ -47,11 +107,29 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
     setError(null);
     try {
       await action();
-      await onRefresh();
+      await Promise.all([onRefresh(), refreshTopups()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur financière HUMAN');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function startTopup(amountEuros: number) {
+    const amountCents = Math.round(amountEuros * 100);
+    if (!Number.isInteger(amountCents) || amountCents < 500 || amountCents > 50000) {
+      setError('Le montant de recharge doit être compris entre 5 € et 500 €.');
+      return;
+    }
+
+    setTopupBusy(true);
+    setError(null);
+    try {
+      const checkout = await humanApi.createTopupCheckout(session, amountCents);
+      window.location.assign(checkout.checkout_url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Impossible de créer le paiement Stripe');
+      setTopupBusy(false);
     }
   }
 
@@ -64,6 +142,13 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
       <span className="finance-balance">{euros(finance.wallet.available_cents, finance.wallet.currency_code)}</span>
     </div>
 
+    {returnState === 'success' && role !== 'expert' && <div className="matching-state signal">
+      Paiement terminé chez Stripe. HUMAN confirme le webhook avant d’ajouter les crédits.
+    </div>}
+    {returnState === 'cancel' && role !== 'expert' && <div className="matching-state">
+      Paiement annulé — aucun crédit n’a été ajouté.
+    </div>}
+
     <div className="finance-metrics">
       <div><span>Disponible</span><strong>{euros(finance.wallet.available_cents, finance.wallet.currency_code)}</strong></div>
       <div><span>Réservé</span><strong>{euros(finance.wallet.reserved_cents, finance.wallet.currency_code)}</strong></div>
@@ -73,6 +158,39 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
     </div>
 
     {error && <div className="error-banner">{error}</div>}
+
+    {role === 'user' && <div className="finance-card topup-card">
+      <div>
+        <p className="eyebrow">Recharge Stripe</p>
+        <h3>Acheter des crédits HUMAN</h3>
+        <p className="muted">1 € payé = 1 crédit HUMAN. Les crédits sont ajoutés uniquement après confirmation du paiement par Stripe.</p>
+      </div>
+      <div className="topup-packs">
+        {[20, 50, 100].map((amount) => <button
+          key={amount}
+          className="secondary-button"
+          disabled={topupBusy}
+          onClick={() => void startTopup(amount)}
+        >{amount} €</button>)}
+      </div>
+      <div className="topup-custom">
+        <label>Autre montant (€)
+          <input
+            type="number"
+            min="5"
+            max="500"
+            step="1"
+            value={topupAmount}
+            onChange={(e) => setTopupAmount(e.target.value)}
+          />
+        </label>
+        <button
+          className="primary-button"
+          disabled={topupBusy}
+          onClick={() => void startTopup(Number(topupAmount))}
+        >{topupBusy ? 'Ouverture Stripe…' : 'Recharger'}</button>
+      </div>
+    </div>}
 
     {role === 'admin' && <>
       <div className="finance-admin-grid">
@@ -135,6 +253,22 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
         </div>)}
       </div>
     </>}
+
+    {role !== 'expert' && <div className="topup-history">
+      <div className="panel-heading">
+        <div><p className="eyebrow">Paiements</p><h3>{role === 'admin' ? 'Recharges Stripe récentes' : 'Mes recharges'}</h3></div>
+        <button className="text-button" onClick={() => void refreshTopups()}>Actualiser</button>
+      </div>
+      {!topups.length && <p className="muted">Aucune recharge enregistrée.</p>}
+      {topups.slice(0, role === 'admin' ? 20 : 8).map((topup) => <div className="topup-row" key={topup.id}>
+        <div>
+          <strong>{euros(topup.amount_cents, topup.currency_code)}</strong>
+          {role === 'admin' && topup.email && <small>{topup.email}</small>}
+          <small>{new Date(topup.created_at).toLocaleString('fr-FR')}</small>
+        </div>
+        <span className={`topup-status ${topup.status}`}>{topupStatusLabel[topup.status] || topup.status}</span>
+      </div>)}
+    </div>}
 
     {role !== 'admin' && <div className="finance-ledger">
       <h3>Derniers mouvements</h3>
