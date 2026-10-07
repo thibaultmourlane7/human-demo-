@@ -195,8 +195,17 @@ export interface HumanFinanceRequest {
   quote_id?: string;
   state: HumanPaymentState;
   total_cents: number;
+  settled_total_cents?: number | null;
+  refunded_cents?: number | null;
   expert_compensation_cents?: number;
   human_commission_cents?: number;
+  client_rate_per_minute_cents?: number | null;
+  expert_rate_per_minute_cents?: number | null;
+  billing_block_minutes?: number | null;
+  reserved_minutes?: number | null;
+  billed_minutes?: number | null;
+  work_started_at?: string | null;
+  work_ended_at?: string | null;
   currency_code: string;
   reserved_at?: string | null;
   settled_at?: string | null;
@@ -212,9 +221,10 @@ export interface HumanPricingPolicy {
   active: boolean;
   model: 'fixed' | 'per_minute' | 'hybrid' | 'custom';
   category_code: HumanCategory;
-  base_price_cents: number;
-  expert_compensation_cents: number;
-  urgent_surcharge_cents: number;
+  client_rate_per_minute_cents: number;
+  expert_rate_per_minute_cents: number;
+  billing_block_minutes: number;
+  urgent_multiplier_bps: number;
   currency_code: string;
 }
 
