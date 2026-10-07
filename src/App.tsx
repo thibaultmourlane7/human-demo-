@@ -126,7 +126,7 @@ export default function App() {
 
     <section className="hero compact-hero human-hero">
       <div className="hero-copy">
-        <div className="hero-badge">HUMAN / SIGNAL 08</div>
+        <div className="hero-badge">HUMAN / SIGNAL 09</div>
         <h1>L’IA bloque.<br/><span>Un humain prend le relais.</span></h1>
         <p>Une infrastructure qui connecte les intelligences artificielles à des experts qualifiés quand la certitude ne suffit plus.</p>
         <div className="relay-strip" aria-label="Flux HUMAN">
