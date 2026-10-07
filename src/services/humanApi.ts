@@ -6,6 +6,8 @@ import type {
   HumanMessage,
   HumanAdminDashboard,
   HumanExpertVerificationStatus,
+  HumanFinanceDashboard,
+  HumanCategory,
 } from '../domain/request';
 
 const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -103,4 +105,33 @@ export const humanApi = {
       'admin_set_expert_status',
       { expertId, status, reason: reason || null },
     ),
+
+  getFinanceDashboard: (session: Session) =>
+    command<HumanFinanceDashboard>(session, 'get_finance_dashboard'),
+
+  prepareQuote: (session: Session, requestId: string) =>
+    command<{ quote_id: string; request_id: string; quoted_total_cents: number; currency_code: string; state: 'quoted' }>(
+      session, 'prepare_quote', { requestId },
+    ),
+
+  acceptQuote: (session: Session, quoteId: string) =>
+    command<{ quote_id: string; request_id: string; state: 'reserved'; reserved_cents: number }>(
+      session, 'accept_quote', { quoteId },
+    ),
+
+  setAdminPricingPolicy: (session: Session, input: {
+    categoryCode: HumanCategory;
+    basePriceCents: number;
+    expertCompensationCents: number;
+    urgentSurchargeCents: number;
+    currency?: string;
+  }) => command(session, 'admin_set_pricing_policy', input),
+
+  adjustAdminWallet: (session: Session, input: {
+    targetUserId: string;
+    walletKind: 'user' | 'expert';
+    amountCents: number;
+    reason: string;
+    currency?: string;
+  }) => command(session, 'admin_adjust_wallet', input),
 };
