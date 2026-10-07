@@ -217,9 +217,9 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
         {payment?.state === 'quoted' && <>
           <div className="payment-price">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format(payment.total_cents / 100)}</div>
           <p className="muted">
-            {payment.client_rate_per_minute_cents != null ? \`\${(payment.client_rate_per_minute_cents / 100).toFixed(2)} €/min\` : ''}
-            {payment.reserved_minutes ? \` · \${payment.reserved_minutes} min réservées\` : ''}
-            {payment.billing_block_minutes ? \` · bloc \${payment.billing_block_minutes} min\` : ''}
+            {payment.client_rate_per_minute_cents != null ? `${(payment.client_rate_per_minute_cents / 100).toFixed(2)} €/min` : ''}
+            {payment.reserved_minutes ? ` · ${payment.reserved_minutes} min réservées` : ''}
+            {payment.billing_block_minutes ? ` · bloc ${payment.billing_block_minutes} min` : ''}
           </p>
           <p className="muted">Le temps non utilisé sera recrédité automatiquement à la clôture.</p>
           <button className="primary-button" disabled={busy || !finance || finance.wallet.available_cents < payment.total_cents} onClick={() => void run(async () => {
@@ -232,7 +232,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
         {payment?.state === 'reserved' && <div className="matching-state signal">Crédits réservés — {payment.reserved_minutes ?? '?'} min disponibles pour l’intervention.</div>}
         {payment?.state === 'settled' && <div className="matching-state signal">
           Mission réglée · {payment.billed_minutes ?? '?'} min facturées
-          {(payment.refunded_cents ?? 0) > 0 ? \` · \${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format((payment.refunded_cents ?? 0) / 100)} recrédités\` : ''}
+          {(payment.refunded_cents ?? 0) > 0 ? ` · ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format((payment.refunded_cents ?? 0) / 100)} recrédités` : ''}
         </div>}
         {payment?.state === 'refunded' && <div className="matching-state">Crédits remboursés.</div>}
       </div>
