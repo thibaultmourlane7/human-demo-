@@ -22,6 +22,11 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const syncDashboard = useCallback(async (activeSession: Session) => {
+    const data = await humanApi.getDashboard(activeSession);
+    setDashboard(data);
+  }, []);
+
   const refresh = useCallback(async (activeSession: Session) => {
     const desiredRole = activeSession.user.user_metadata?.human_role === 'expert' ? 'expert' : 'user';
     await humanApi.bootstrapAccount(activeSession, {
@@ -29,9 +34,8 @@ export default function App() {
       firstName: activeSession.user.user_metadata?.first_name,
       lastName: activeSession.user.user_metadata?.last_name,
     });
-    const data = await humanApi.getDashboard(activeSession);
-    setDashboard(data);
-  }, []);
+    await syncDashboard(activeSession);
+  }, [syncDashboard]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -49,13 +53,27 @@ export default function App() {
     refresh(session).catch((err) => setError(err instanceof Error ? err.message : 'Erreur HUMAN'));
   }, [session, refresh]);
 
+  useEffect(() => {
+    if (!session || !dashboard) return;
+    const timer = window.setInterval(() => {
+      void syncDashboard(session).catch(() => undefined);
+      const requestId = selected?.request.id;
+      if (requestId) {
+        void humanApi.getRequestDetail(session, requestId)
+          .then(setSelected)
+          .catch(() => undefined);
+      }
+    }, 8000);
+    return () => window.clearInterval(timer);
+  }, [session, dashboard?.profile?.id, selected?.request.id, syncDashboard]);
+
   async function run(action: () => Promise<unknown>, reload = true) {
     if (!session) return;
     setBusy(true);
     setError(null);
     try {
       await action();
-      if (reload) await refresh(session);
+      if (reload) await syncDashboard(session);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur HUMAN');
     } finally {
@@ -99,7 +117,7 @@ export default function App() {
 
     <section className="hero compact-hero human-hero">
       <div className="hero-copy">
-        <div className="hero-badge">HUMAN / SIGNAL 06</div>
+        <div className="hero-badge">HUMAN / SIGNAL 07</div>
         <h1>L’IA bloque.<br/><span>Un humain prend le relais.</span></h1>
         <p>Une infrastructure qui connecte les intelligences artificielles à des experts qualifiés quand la certitude ne suffit plus.</p>
         <div className="relay-strip" aria-label="Flux HUMAN">
@@ -126,7 +144,7 @@ export default function App() {
       {dashboard.profile?.role === 'admin' ? (
         <AdminArea session={session} />
       ) : dashboard.profile?.role === 'expert' ? (
-        <ExpertArea dashboard={dashboard} session={session} busy={busy} run={run} refresh={refresh} answerDraft={answerDraft} setAnswerDraft={setAnswerDraft} />
+        <ExpertArea dashboard={dashboard} session={session} busy={busy} run={run} refresh={syncDashboard} answerDraft={answerDraft} setAnswerDraft={setAnswerDraft} />
       ) : (
         <UserArea dashboard={dashboard} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} setSelected={setSelected} />
       )}
@@ -166,6 +184,8 @@ function UserArea({ dashboard, busy, createRequest, openRequest, selected, sessi
       <p className="question-box">{selected.content.question}</p>
       {selected.content.context && <p className="muted">Contexte : {selected.content.context}</p>}
       <div className="status-row"><span>Statut</span><strong>{statusLabel[selected.request.status] || selected.request.status}</strong></div>
+      {selected.request.status === 'searching' && <div className="matching-state">Recherche automatique active — HUMAN attend le prochain expert compatible disponible.</div>}
+      {selected.request.status === 'offered' && <div className="matching-state signal">Un expert compatible a été sollicité. En cas de refus ou d’expiration, HUMAN passe automatiquement au suivant.</div>}
       <MessageThread session={session} requestId={selected.request.id} canSend={['accepted', 'in_progress', 'answered'].includes(selected.request.status)} defaultOpen />
       {selected.result?.expert_answer && <div className="answer-card"><small>Réponse de l’expert</small><p>{selected.result.expert_answer}</p></div>}
       {selected.request.status === 'answered' && selected.result?.expert_answer && <div className="button-row">
@@ -209,9 +229,9 @@ function ExpertArea({ dashboard, session, busy, run, refresh, answerDraft, setAn
     </div>
 
     <div className="panel form-panel"><div className="panel-heading"><div><p className="eyebrow">Propositions</p><h2>Missions à accepter</h2></div><span className="count-pill">{expert.offers.length}</span></div>
-      {!expert.offers.length && <p className="muted">Aucune proposition active.</p>}
+      {!expert.offers.length && <div className="matching-state">{expert.available ? 'Disponible — aucune mission compatible en attente pour le moment.' : 'Vous êtes indisponible. Activez la disponibilité pour recevoir les prochaines missions compatibles.'}</div>}
       {expert.offers.map((offer) => <article className="offer-card" key={offer.match_id}>
-        <small>{offer.category_label} · {offer.urgency === 'urgent' ? 'Urgent' : 'Normal'}</small><h3>{offer.question}</h3>{offer.context && <p>{offer.context}</p>}
+        <small>{offer.category_label} · {offer.urgency === 'urgent' ? 'Urgent' : 'Normal'}</small><h3>{offer.question}</h3>{offer.context && <p>{offer.context}</p>}{offer.expires_at && <p className="offer-expiry">Réponse attendue avant {new Date(offer.expires_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>}
         <div className="button-row"><button className="primary-button" disabled={busy} onClick={() => run(() => humanApi.expertRespond(session, offer.request_id, true))}>Accepter</button><button className="secondary-button" disabled={busy} onClick={() => run(() => humanApi.expertRespond(session, offer.request_id, false))}>Refuser</button></div>
       </article>)}
     </div>
