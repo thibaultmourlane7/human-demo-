@@ -261,3 +261,34 @@ export interface HumanFinanceDashboard {
   };
   accounts: HumanFinanceAccount[];
 }
+
+
+export type HumanTopupStatus =
+  | 'created'
+  | 'checkout_created'
+  | 'paid'
+  | 'failed'
+  | 'expired'
+  | 'refund_requested'
+  | 'refunded'
+  | 'refund_review';
+
+export interface HumanTopup {
+  id: string;
+  user_id?: string;
+  email?: string;
+  status: HumanTopupStatus;
+  amount_cents: number;
+  credits_cents: number;
+  currency_code: string;
+  checkout_session_id?: string | null;
+  payment_intent_id?: string | null;
+  error_code?: string | null;
+  error_message?: string | null;
+  created_at: string;
+  checkout_created_at?: string | null;
+  paid_at?: string | null;
+  failed_at?: string | null;
+  expired_at?: string | null;
+  refunded_at?: string | null;
+}
