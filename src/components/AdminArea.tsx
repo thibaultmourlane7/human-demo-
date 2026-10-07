@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type {
   HumanAdminDashboard,
@@ -35,6 +35,7 @@ export function AdminArea({ session }: Props) {
   const [filter, setFilter] = useState<HumanExpertVerificationStatus | 'all'>('pending');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const requestDetailRef = useRef<HTMLDivElement | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -46,6 +47,14 @@ export function AdminArea({ session }: Props) {
   }, [session]);
 
   useEffect(() => { void load(); }, [load]);
+
+  useEffect(() => {
+    if (!selectedRequest) return;
+    const frame = requestAnimationFrame(() => {
+      requestDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selectedRequest]);
 
   const experts = useMemo(() => {
     if (!data) return [];
@@ -169,7 +178,7 @@ export function AdminArea({ session }: Props) {
       <div className="panel-heading"><div><p className="eyebrow">Mission watch</p><h2>Missions récentes</h2></div><span className="count-pill">{data.requests.length}</span></div>
       <div className="admin-request-list">
         {!data.requests.length && <div className="admin-empty">Aucune mission créée pour le moment.</div>}
-        {data.requests.map((request) => <button key={request.id} onClick={() => void openRequest(request.id)}>
+        {data.requests.map((request) => <button className={selectedRequest?.request.id === request.id ? 'active' : ''} key={request.id} onClick={() => void openRequest(request.id)}>
           <span className="admin-request-code">{request.category_code.toUpperCase()}</span>
           <span><strong>{request.client_name || 'Client HUMAN'}</strong><small>{request.category_label}</small></span>
           <span><strong>{statusLabel[request.status] || request.status}</strong><small>{request.selected_expert_profession || 'Aucun expert'}</small></span>
@@ -191,7 +200,7 @@ export function AdminArea({ session }: Props) {
       </div>
     </div>
 
-    {selectedRequest && <div className="panel admin-request-detail admin-wide">
+    {selectedRequest && <div ref={requestDetailRef} className="panel admin-request-detail admin-wide">
       <div className="panel-heading">
         <div><p className="eyebrow">Mission inspection</p><h2>{selectedRequest.request.category_label}</h2></div>
         <button className="text-button" onClick={() => setSelectedRequest(null)}>Fermer</button>
