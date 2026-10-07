@@ -152,6 +152,10 @@ export interface HumanAdminRequest {
   client_name: string | null;
   selected_expert_id: string | null;
   selected_expert_profession: string | null;
+  pending_expert_id: string | null;
+  pending_expert_profession: string | null;
+  pending_expert_name: string | null;
+  offer_expires_at: string | null;
   created_at: string;
   updated_at: string;
   closed_at: string | null;
