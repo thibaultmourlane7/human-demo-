@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthPanel } from './components/AuthPanel';
+import { AdminArea } from './components/AdminArea';
 import { ExpertProfileForm } from './components/ExpertProfileForm';
 import { MessageThread } from './components/MessageThread';
 import { RequestForm } from './components/RequestForm';
@@ -98,7 +99,7 @@ export default function App() {
 
     <section className="hero compact-hero human-hero">
       <div className="hero-copy">
-        <div className="hero-badge">HUMAN / SIGNAL 05</div>
+        <div className="hero-badge">HUMAN / SIGNAL 06</div>
         <h1>L’IA bloque.<br/><span>Un humain prend le relais.</span></h1>
         <p>Une infrastructure qui connecte les intelligences artificielles à des experts qualifiés quand la certitude ne suffit plus.</p>
         <div className="relay-strip" aria-label="Flux HUMAN">
@@ -122,7 +123,9 @@ export default function App() {
         <div className="role-pill">{dashboard.profile?.role === 'expert' ? 'Expert' : dashboard.profile?.role === 'admin' ? 'Admin' : 'Utilisateur'}</div>
       </section>
 
-      {dashboard.profile?.role === 'expert' || dashboard.profile?.role === 'admin' ? (
+      {dashboard.profile?.role === 'admin' ? (
+        <AdminArea session={session} />
+      ) : dashboard.profile?.role === 'expert' ? (
         <ExpertArea dashboard={dashboard} session={session} busy={busy} run={run} refresh={refresh} answerDraft={answerDraft} setAnswerDraft={setAnswerDraft} />
       ) : (
         <UserArea dashboard={dashboard} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} setSelected={setSelected} />

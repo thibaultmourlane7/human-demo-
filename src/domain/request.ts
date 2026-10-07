@@ -112,3 +112,65 @@ export interface HumanMessage {
   message: string;
   created_at: string;
 }
+
+export type HumanExpertVerificationStatus = 'pending' | 'verified' | 'rejected' | 'suspended';
+
+export interface HumanAdminStats {
+  experts_total: number;
+  experts_pending: number;
+  experts_verified: number;
+  experts_suspended: number;
+  requests_total: number;
+  requests_active: number;
+  requests_completed: number;
+}
+
+export interface HumanAdminExpert {
+  id: string;
+  profile_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  profession: string;
+  bio: string | null;
+  country_code: string;
+  languages: string[];
+  available: boolean;
+  verified: boolean;
+  verification_status: HumanExpertVerificationStatus;
+  created_at: string;
+  updated_at: string;
+  specialties: Array<{ code: HumanCategory; label: string }>;
+}
+
+export interface HumanAdminRequest {
+  id: string;
+  title: string | null;
+  status: HumanRequestStatus;
+  urgency: HumanUrgency;
+  category_code: HumanCategory;
+  category_label: string;
+  client_name: string | null;
+  selected_expert_id: string | null;
+  selected_expert_profession: string | null;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+}
+
+export interface HumanAdminEvent {
+  id: string;
+  expert_id: string;
+  expert_name: string | null;
+  previous_status: HumanExpertVerificationStatus;
+  new_status: HumanExpertVerificationStatus;
+  reason: string | null;
+  actor_name: string | null;
+  created_at: string;
+}
+
+export interface HumanAdminDashboard {
+  stats: HumanAdminStats;
+  experts: HumanAdminExpert[];
+  requests: HumanAdminRequest[];
+  events: HumanAdminEvent[];
+}

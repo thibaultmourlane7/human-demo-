@@ -4,6 +4,8 @@ import type {
   HumanRequestDetail,
   HumanRequestInput,
   HumanMessage,
+  HumanAdminDashboard,
+  HumanExpertVerificationStatus,
 } from '../domain/request';
 
 const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -91,4 +93,14 @@ export const humanApi = {
 
   completeRequest: (session: Session, requestId: string, input: { validationStatus: 'accepted' | 'rejected'; feedback?: string }) =>
     command(session, 'complete_request', { requestId, ...input }),
+
+  getAdminDashboard: (session: Session) =>
+    command<HumanAdminDashboard>(session, 'admin_get_dashboard'),
+
+  setAdminExpertStatus: (session: Session, expertId: string, status: HumanExpertVerificationStatus, reason?: string) =>
+    command<{ expert_id: string; verification_status: HumanExpertVerificationStatus; verified: boolean; available: boolean; unchanged: boolean }>(
+      session,
+      'admin_set_expert_status',
+      { expertId, status, reason: reason || null },
+    ),
 };
