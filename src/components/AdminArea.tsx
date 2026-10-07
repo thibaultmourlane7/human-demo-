@@ -49,12 +49,25 @@ export function AdminArea({ session }: Props) {
   useEffect(() => { void load(); }, [load]);
 
   useEffect(() => {
+    const timer = window.setInterval(() => {
+      void load();
+      const requestId = selectedRequest?.request.id;
+      if (requestId) {
+        void humanApi.getRequestDetail(session, requestId)
+          .then(setSelectedRequest)
+          .catch(() => undefined);
+      }
+    }, 8000);
+    return () => window.clearInterval(timer);
+  }, [load, session, selectedRequest?.request.id]);
+
+  useEffect(() => {
     if (!selectedRequest) return;
     const frame = requestAnimationFrame(() => {
       requestDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     return () => cancelAnimationFrame(frame);
-  }, [selectedRequest]);
+  }, [selectedRequest?.request.id]);
 
   const experts = useMemo(() => {
     if (!data) return [];
@@ -181,7 +194,7 @@ export function AdminArea({ session }: Props) {
         {data.requests.map((request) => <button className={selectedRequest?.request.id === request.id ? 'active' : ''} key={request.id} onClick={() => void openRequest(request.id)}>
           <span className="admin-request-code">{request.category_code.toUpperCase()}</span>
           <span><strong>{request.client_name || 'Client HUMAN'}</strong><small>{request.category_label}</small></span>
-          <span><strong>{statusLabel[request.status] || request.status}</strong><small>{request.selected_expert_profession || 'Aucun expert'}</small></span>
+          <span><strong>{statusLabel[request.status] || request.status}</strong><small>{request.status === 'offered' && request.pending_expert_profession ? `${request.pending_expert_name || request.pending_expert_profession} · expire ${request.offer_expires_at ? new Date(request.offer_expires_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'bientôt'}` : request.selected_expert_profession || (request.status === 'searching' ? 'File automatique active' : 'Aucun expert')}</small></span>
           <b>↗</b>
         </button>)}
       </div>
