@@ -109,9 +109,9 @@ export const humanApi = {
   getFinanceDashboard: (session: Session) =>
     command<HumanFinanceDashboard>(session, 'get_finance_dashboard'),
 
-  prepareQuote: (session: Session, requestId: string) =>
-    command<{ quote_id: string; request_id: string; quoted_total_cents: number; currency_code: string; state: 'quoted' }>(
-      session, 'prepare_quote', { requestId },
+  prepareQuote: (session: Session, requestId: string, requestedMinutes: number) =>
+    command<{ quote_id: string; request_id: string; quoted_total_cents: number; currency_code: string; state: 'quoted'; reserved_minutes: number; client_rate_per_minute_cents: number }>(
+      session, 'prepare_quote', { requestId, requestedMinutes },
     ),
 
   acceptQuote: (session: Session, quoteId: string) =>
@@ -121,9 +121,10 @@ export const humanApi = {
 
   setAdminPricingPolicy: (session: Session, input: {
     categoryCode: HumanCategory;
-    basePriceCents: number;
-    expertCompensationCents: number;
-    urgentSurchargeCents: number;
+    clientRatePerMinuteCents: number;
+    expertRatePerMinuteCents: number;
+    billingBlockMinutes: number;
+    urgentMultiplierBps: number;
     currency?: string;
   }) => command(session, 'admin_set_pricing_policy', input),
 
