@@ -442,3 +442,7 @@ footer {
   .finance-metrics, .finance-fields { grid-template-columns:1fr; }
   .finance-policy { grid-template-columns:1fr; }
 }
+
+.minute-quote { display:grid; grid-template-columns:minmax(180px,260px) auto; gap:12px; align-items:end; }
+.minute-quote .secondary-button { min-height:44px; }
+@media (max-width:600px) { .minute-quote { grid-template-columns:1fr; } }
