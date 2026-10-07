@@ -179,6 +179,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
 }) {
   const payment = selected ? finance?.requests.find((item) => item.request_id === selected.request.id) ?? null : null;
   const canQuote = !!selected && ['draft','searching','offered','accepted'].includes(selected.request.status);
+  const [requestedMinutes, setRequestedMinutes] = useState(10);
 
   return <section className="workspace live-workspace">
     <div className="panel form-panel">
@@ -204,10 +205,35 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
       {selected.request.status === 'offered' && <div className="matching-state signal">Un expert compatible a été sollicité. En cas de refus ou d’expiration, HUMAN passe automatiquement au suivant.</div>}
       <div className="payment-box">
         <div className="status-row"><span>Financement</span><strong>{payment ? payment.state : 'Non chiffré'}</strong></div>
-        {!payment && canQuote && <button className="secondary-button" disabled={busy} onClick={() => void run(async () => { await humanApi.prepareQuote(session, selected.request.id); await refreshFinance(session); })}>Calculer le tarif</button>}
-        {payment?.state === 'quoted' && <><div className="payment-price">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format(payment.total_cents / 100)}</div><p className="muted">Ce montant sera réservé dans vos crédits avant l’intervention.</p><button className="primary-button" disabled={busy || !finance || finance.wallet.available_cents < payment.total_cents} onClick={() => void run(async () => { if (!payment.quote_id) return; await humanApi.acceptQuote(session, payment.quote_id); await refreshFinance(session); })}>Réserver les crédits</button>{finance && finance.wallet.available_cents < payment.total_cents && <div className="notice">Crédits insuffisants. Un administrateur doit créditer votre compte pour le test.</div>}</>}
-        {payment?.state === 'reserved' && <div className="matching-state signal">Crédits réservés — l’expert peut démarrer l’intervention.</div>}
-        {payment?.state === 'settled' && <div className="matching-state signal">Mission réglée.</div>}
+        {!payment && canQuote && <div className="minute-quote">
+          <label>Temps à prépayer (minutes)
+            <input type="number" min="1" max="480" step="1" value={requestedMinutes} onChange={(e) => setRequestedMinutes(Math.max(1, Math.min(480, Number(e.target.value) || 1)))} />
+          </label>
+          <button className="secondary-button" disabled={busy} onClick={() => void run(async () => {
+            await humanApi.prepareQuote(session, selected.request.id, requestedMinutes);
+            await refreshFinance(session);
+          })}>Calculer le tarif</button>
+        </div>}
+        {payment?.state === 'quoted' && <>
+          <div className="payment-price">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format(payment.total_cents / 100)}</div>
+          <p className="muted">
+            {payment.client_rate_per_minute_cents != null ? \`\${(payment.client_rate_per_minute_cents / 100).toFixed(2)} €/min\` : ''}
+            {payment.reserved_minutes ? \` · \${payment.reserved_minutes} min réservées\` : ''}
+            {payment.billing_block_minutes ? \` · bloc \${payment.billing_block_minutes} min\` : ''}
+          </p>
+          <p className="muted">Le temps non utilisé sera recrédité automatiquement à la clôture.</p>
+          <button className="primary-button" disabled={busy || !finance || finance.wallet.available_cents < payment.total_cents} onClick={() => void run(async () => {
+            if (!payment.quote_id) return;
+            await humanApi.acceptQuote(session, payment.quote_id);
+            await refreshFinance(session);
+          })}>Réserver les crédits</button>
+          {finance && finance.wallet.available_cents < payment.total_cents && <div className="notice">Crédits insuffisants. Un administrateur doit créditer votre compte pour le test.</div>}
+        </>}
+        {payment?.state === 'reserved' && <div className="matching-state signal">Crédits réservés — {payment.reserved_minutes ?? '?'} min disponibles pour l’intervention.</div>}
+        {payment?.state === 'settled' && <div className="matching-state signal">
+          Mission réglée · {payment.billed_minutes ?? '?'} min facturées
+          {(payment.refunded_cents ?? 0) > 0 ? \` · \${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format((payment.refunded_cents ?? 0) / 100)} recrédités\` : ''}
+        </div>}
         {payment?.state === 'refunded' && <div className="matching-state">Crédits remboursés.</div>}
       </div>
       <MessageThread session={session} requestId={selected.request.id} canSend={['accepted', 'in_progress', 'answered'].includes(selected.request.status)} defaultOpen />
@@ -267,8 +293,25 @@ function ExpertArea({ dashboard, finance, session, busy, run, refresh, refreshFi
       {expert.jobs.map((job: HumanJob) => <article className="job-card" key={job.request_id}>
         <div className="status-row"><span>{job.category_label}</span><strong>{statusLabel[job.status] || job.status}</strong></div><h3>{job.question}</h3>{job.context && <p className="muted">{job.context}</p>}
         <MessageThread session={session} requestId={job.request_id} canSend={['accepted', 'in_progress', 'answered'].includes(job.status)} />
-        {job.status === 'accepted' && (() => { const payment = finance?.requests.find((item) => item.request_id === job.request_id) ?? null; const blocked = payment?.state === 'quoted'; return <div className="button-row"><button className="primary-button" disabled={busy || blocked} onClick={() => run(async () => { await humanApi.startIntervention(session, job.request_id); await refreshFinance(session); })}>{blocked ? 'Paiement en attente' : 'Démarrer l’intervention'}</button>{payment?.state === 'reserved' && <span className="finance-ok">Crédits réservés</span>}</div>; })()}
-        {job.status === 'in_progress' && <div className="answer-editor"><textarea rows={5} value={answerDraft} onChange={(e) => setAnswerDraft(e.target.value)} placeholder="Rédigez la réponse experte…" /><button className="primary-button" disabled={busy || answerDraft.trim().length < 2} onClick={() => run(async () => { await humanApi.submitAnswer(session, job.request_id, answerDraft); setAnswerDraft(''); })}>Envoyer la réponse</button></div>}
+        {job.status === 'accepted' && (() => {
+          const payment = finance?.requests.find((item) => item.request_id === job.request_id) ?? null;
+          const blocked = payment?.state === 'quoted';
+          return <div>
+            {payment?.expert_rate_per_minute_cents != null && <p className="offer-expiry">Rémunération : {(payment.expert_rate_per_minute_cents / 100).toFixed(2)} €/min · {payment.reserved_minutes ?? '?'} min réservées</p>}
+            <div className="button-row">
+              <button className="primary-button" disabled={busy || blocked} onClick={() => run(async () => {
+                await humanApi.startIntervention(session, job.request_id);
+                await refreshFinance(session);
+              })}>{blocked ? 'Paiement en attente' : 'Démarrer l’intervention'}</button>
+              {payment?.state === 'reserved' && <span className="finance-ok">Crédits réservés</span>}
+            </div>
+          </div>;
+        })()}
+        {job.status === 'in_progress' && <div className="answer-editor">
+          {(() => { const payment = finance?.requests.find((item) => item.request_id === job.request_id) ?? null; return payment?.reserved_minutes ? <div className="matching-state signal">Compteur actif · jusqu’à {payment.reserved_minutes} min prépayées</div> : null; })()}
+          <textarea rows={5} value={answerDraft} onChange={(e) => setAnswerDraft(e.target.value)} placeholder="Rédigez la réponse experte…" />
+          <button className="primary-button" disabled={busy || answerDraft.trim().length < 2} onClick={() => run(async () => { await humanApi.submitAnswer(session, job.request_id, answerDraft); setAnswerDraft(''); })}>Envoyer la réponse</button>
+        </div>}
         {job.expert_answer && <div className="answer-card"><small>Réponse envoyée</small><p>{job.expert_answer}</p></div>}
       </article>)}
     </div>
