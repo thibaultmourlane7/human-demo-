@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import type {
-  HumanCategory,
-  HumanFinanceDashboard,
-} from '../domain/request';
+import type { HumanCategory, HumanFinanceDashboard } from '../domain/request';
 import { humanApi } from '../services/humanApi';
 
 interface Props {
@@ -26,9 +23,10 @@ function euros(cents: number, currency = 'EUR') {
 
 export function FinancePanel({ session, finance, role, onRefresh }: Props) {
   const [category, setCategory] = useState<HumanCategory>('legal');
-  const [base, setBase] = useState('50');
-  const [expert, setExpert] = useState('35');
-  const [urgent, setUrgent] = useState('10');
+  const [clientRate, setClientRate] = useState('1.00');
+  const [expertRate, setExpertRate] = useState('0.70');
+  const [blockMinutes, setBlockMinutes] = useState('10');
+  const [urgentMultiplier, setUrgentMultiplier] = useState('1.00');
   const [target, setTarget] = useState('');
   const [credit, setCredit] = useState('100');
   const [reason, setReason] = useState('Crédits de test HUMAN');
@@ -79,22 +77,24 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
     {role === 'admin' && <>
       <div className="finance-admin-grid">
         <div className="finance-card">
-          <h3>Tarification</h3>
+          <h3>Tarification à la minute</h3>
           <label>Domaine
             <select value={category} onChange={(e) => setCategory(e.target.value as HumanCategory)}>
               {Object.entries(categoryLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
           </label>
           <div className="finance-fields">
-            <label>Prix client (€)<input type="number" min="0" step="0.01" value={base} onChange={(e) => setBase(e.target.value)} /></label>
-            <label>Part expert (€)<input type="number" min="0" step="0.01" value={expert} onChange={(e) => setExpert(e.target.value)} /></label>
-            <label>Supplément urgent (€)<input type="number" min="0" step="0.01" value={urgent} onChange={(e) => setUrgent(e.target.value)} /></label>
+            <label>Client €/min<input type="number" min="0.01" step="0.01" value={clientRate} onChange={(e) => setClientRate(e.target.value)} /></label>
+            <label>Expert €/min<input type="number" min="0" step="0.01" value={expertRate} onChange={(e) => setExpertRate(e.target.value)} /></label>
+            <label>Bloc minimum (min)<input type="number" min="1" max="120" step="1" value={blockMinutes} onChange={(e) => setBlockMinutes(e.target.value)} /></label>
+            <label>Urgence ×<input type="number" min="1" max="3" step="0.05" value={urgentMultiplier} onChange={(e) => setUrgentMultiplier(e.target.value)} /></label>
           </div>
           <button className="primary-button" disabled={busy} onClick={() => void run(() => humanApi.setAdminPricingPolicy(session, {
             categoryCode: category,
-            basePriceCents: Math.round(Number(base) * 100),
-            expertCompensationCents: Math.round(Number(expert) * 100),
-            urgentSurchargeCents: Math.round(Number(urgent) * 100),
+            clientRatePerMinuteCents: Math.round(Number(clientRate) * 100),
+            expertRatePerMinuteCents: Math.round(Number(expertRate) * 100),
+            billingBlockMinutes: Math.round(Number(blockMinutes)),
+            urgentMultiplierBps: Math.round(Number(urgentMultiplier) * 10000),
           }))}>Enregistrer le tarif</button>
         </div>
 
@@ -127,10 +127,11 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
         {!finance.policies.length && <p className="muted">Aucun tarif configuré pour le moment.</p>}
         {finance.policies.map((policy) => <div className="finance-policy" key={policy.id}>
           <strong>{categoryLabel[policy.category_code] || policy.category_code}</strong>
-          <span>Client {euros(policy.base_price_cents, policy.currency_code)}</span>
-          <span>Expert {euros(policy.expert_compensation_cents, policy.currency_code)}</span>
-          <span>Urgent +{euros(policy.urgent_surcharge_cents, policy.currency_code)}</span>
-          <span>Commission base {euros(policy.base_price_cents - policy.expert_compensation_cents, policy.currency_code)}</span>
+          <span>Client {euros(policy.client_rate_per_minute_cents, policy.currency_code)}/min</span>
+          <span>Expert {euros(policy.expert_rate_per_minute_cents, policy.currency_code)}/min</span>
+          <span>HUMAN {euros(policy.client_rate_per_minute_cents - policy.expert_rate_per_minute_cents, policy.currency_code)}/min</span>
+          <span>Bloc {policy.billing_block_minutes} min</span>
+          <span>Urgence ×{(policy.urgent_multiplier_bps / 10000).toFixed(2)}</span>
         </div>)}
       </div>
     </>}
