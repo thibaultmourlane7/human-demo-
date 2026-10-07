@@ -8,6 +8,7 @@ import type {
   HumanExpertVerificationStatus,
   HumanFinanceDashboard,
   HumanCategory,
+  HumanTopup,
 } from '../domain/request';
 
 const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -135,4 +136,16 @@ export const humanApi = {
     reason: string;
     currency?: string;
   }) => command(session, 'admin_adjust_wallet', input),
+
+  getTopups: (session: Session) =>
+    command<HumanTopup[]>(session, 'get_topups'),
+
+  createTopupCheckout: (session: Session, amountCents: number) =>
+    command<{
+      topup_id: string;
+      checkout_session_id: string;
+      checkout_url: string;
+      amount_cents: number;
+      currency_code: string;
+    }>(session, 'create_topup_checkout', { amountCents }),
 };
