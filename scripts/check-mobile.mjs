@@ -15,5 +15,12 @@ const html=read('index.source.html');
 assert.match(html,/viewport/);
 const pkg=JSON.parse(read('package.json'));
 assert.ok(pkg.scripts?.build);
+for(const name of ['@capacitor/core','@capacitor/cli','@capacitor/android','@capacitor/ios']) {
+ const version=pkg.dependencies?.[name]??pkg.devDependencies?.[name];
+ assert.equal(version,'8.5.3',name+' must remain pinned and consistent');
+}
+assert.match(pkg.scripts['mobile:sync'],/cap sync/);
+assert.match(pkg.scripts['mobile:android:init'],/cap add android/);
+assert.match(pkg.scripts['mobile:ios:init'],/cap add ios/);
 assert.ok(existsSync('docs/SPRINT12_MOBILE.md'));
 console.log('HUMAN mobile configuration checks passed. No native app compiled.');
