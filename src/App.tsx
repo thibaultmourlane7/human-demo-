@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthPanel } from './components/AuthPanel';
+import { PwaInstallPanel } from './components/PwaInstallPanel';
 import { AdminArea } from './components/AdminArea';
 import { ExpertProfileForm } from './components/ExpertProfileForm';
 import { FinancePanel } from './components/FinancePanel';
@@ -123,6 +124,7 @@ export default function App() {
       </div>
       {session && <div className="top-actions"><span>{session.user.email}</span><button className="secondary-button" onClick={() => supabase.auth.signOut()}>Déconnexion</button></div>}
     </header>
+    <PwaInstallPanel />
 
     <section className="hero compact-hero human-hero">
       <div className="hero-copy">
