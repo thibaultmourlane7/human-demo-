@@ -12,11 +12,11 @@ Cette branche descend de feature/s12-pwa pour réutiliser le frontend.
 - Aucun plugin payant installé ni backend dupliqué.
 
 ## Construction locale après validation des environnements
-1. Sur une machine autorisée avec Node 22 : npm ci.
-2. Installer et verrouiller les versions de Capacitor dans package.json + package-lock.json.
-   Vérifier Capacitor Core/CLI/Android/iOS même version majeure.
-3. npx cap add android / npx cap add ios (dans l'environnement adapté).
-4. npm run build, npx cap sync, ouvrir Android Studio / Xcode.
+1. Sur une machine autorisée avec Node 22 : npm install (verrouiller ensuite les dépendances avec package-lock.json avant toute livraison).
+2. Capacitor Core/CLI/Android/iOS sont déclarés à la version 8.5.3 dans package.json.
+   Générer/vérifier le fichier package-lock.json avant une livraison native reproductible.
+3. npm run mobile:android:init / npm run mobile:ios:init (dans les environnements adaptés).
+4. npm run mobile:sync, ouvrir Android Studio / Xcode.
 5. Configurer Universal Links/App Links et les redirections Supabase Auth spécifiques
    AVANT toute vraie connexion OAuth ou accès aux dossiers.
 6. Compiler et tester sur émulateur ou appareil; ne jamais annoncer cette étape
@@ -39,3 +39,7 @@ Ne jamais copier de secret Stripe ou clé d'administration Supabase dans l'appli
 - Composant BuildingIntakeDraft ajouté avec métier, question, contexte, 5 pièces jointes locales.
 - L'activation de l'aperçu est conditionnée à VITE_HUMAN_BUILDING_PREVIEW=true.
 - Aucun upload, aucune création de mission ni débit de crédit : la fonctionnalité métier n'est pas encore déployée.
+
+
+## Dernière mise à jour
+Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés sur la branche. Les contrôles GitHub valident le build web, PAS les projets natifs Android/iOS. Aucune compilation native exécutée et aucun lockfile généré à ce stade.
