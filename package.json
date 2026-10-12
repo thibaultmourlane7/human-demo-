@@ -22,8 +22,8 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "@capacitor/core": "8.5.3",
-    "@capacitor/android": "8.0.0",
-    "@capacitor/ios": "8.0.0"
+    "@capacitor/android": "8.5.3",
+    "@capacitor/ios": "8.5.3"
   },
   "devDependencies": {
     "@types/react": "19.3.0",
@@ -31,8 +31,6 @@
     "@vitejs/plugin-react": "6.1.2",
     "typescript": "7.0.2",
     "vite": "8.3.2",
-    "@capacitor/cli": "8.5.3",
-    "@capacitor/android": "8.5.3",
-    "@capacitor/ios": "8.5.3"
+    "@capacitor/cli": "8.5.3"
   }
 }
