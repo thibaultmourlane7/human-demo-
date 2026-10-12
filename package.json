@@ -13,13 +13,15 @@
     "mobile:add:android": "npx cap add android",
     "mobile:add:ios": "npx cap add ios",
     "mobile:sync": "npm run build && npx cap sync",
-    "mobile:doctor": "npx cap doctor"
+    "mobile:doctor": "npx cap doctor",
+    "mobile:android:init": "npm run build && npx cap add android",
+    "mobile:ios:init": "npm run build && npx cap add ios"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "@capacitor/core": "8.0.0",
+    "@capacitor/core": "8.5.3",
     "@capacitor/android": "8.0.0",
     "@capacitor/ios": "8.0.0"
   },
@@ -29,6 +31,8 @@
     "@vitejs/plugin-react": "6.1.2",
     "typescript": "7.0.2",
     "vite": "8.3.2",
-    "@capacitor/cli": "8.0.0"
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/android": "8.5.3",
+    "@capacitor/ios": "8.5.3"
   }
 }
