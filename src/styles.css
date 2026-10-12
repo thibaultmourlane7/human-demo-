@@ -476,3 +476,10 @@ footer {
 @supports (padding: env(safe-area-inset-bottom)) {body{padding-bottom:env(safe-area-inset-bottom)}.topbar{padding-top:max(12px,env(safe-area-inset-top))}}
 .mobile-environment{max-width:1200px;margin:8px auto;padding:8px 16px;border-left:4px solid #b2f162;background:#f4f7f1;font-weight:650}
 @media(max-width:600px){button,input,select,textarea{font-size:16px}button{min-height:44px}main{max-width:100%;overflow-x:clip}.topbar{flex-wrap:wrap;gap:10px}}
+
+/* Sprint 12: optional local-only building intake preview */
+.building-intake{grid-column:1/-1;padding:24px}
+.building-intake form{display:grid;gap:14px}
+.building-intake label{display:grid;gap:6px}
+.building-intake-ready{padding:14px;background:#f2f8e9;border:1px solid #6d9145;font-weight:700}
+.building-intake textarea{max-width:100%}
