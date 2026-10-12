@@ -187,7 +187,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
   const [requestedMinutes, setRequestedMinutes] = useState(10);
 
   return <section className="workspace live-workspace">
-    {import.meta.env.VITE_HUMAN_BUILDING_PREVIEW === 'true' && <BuildingIntakeDraft />}
+    {import.meta.env.VITE_HUMAN_BUILDING_PREVIEW === 'true' && <BuildingIntakeDraft session={session} onSaved={() => refreshFinance(session)} />}
     <div className="panel form-panel">
       <div className="panel-heading"><div><p className="eyebrow">Nouvelle mission</p><h2>Demander un expert</h2></div><span className="demo-pill live-pill">Connecté</span></div>
       <RequestForm onSubmit={createRequest} disabled={busy} />
