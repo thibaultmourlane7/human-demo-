@@ -33,4 +33,4 @@ Cette branche descend de feature/s12-pwa pour réutiliser le frontend.
 ## Attention
 Les sessions Supabase actuelles sont adaptées au navigateur. Leur persistence,
 leurs URL de rappel et la protection des secrets devront être revues pour l'usage WebView.
-Ne jamais copier de secret Stripe ou service_role dans l'application.
+Ne jamais copier de secret Stripe ou clé d'administration Supabase dans l'application.
