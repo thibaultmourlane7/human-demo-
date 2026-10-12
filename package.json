@@ -7,8 +7,9 @@
     "dev": "cp index.source.html index.html && vite",
     "build": "cp index.source.html index.html && npm run build:raw",
     "preview": "vite preview",
-    "check:public": "node scripts/check-public-boundary.mjs",
-    "build:raw": "tsc -b && vite build"
+    "check:public": "node scripts/check-public-boundary.mjs && npm run check:mobile",
+    "build:raw": "tsc -b && vite build",
+    "check:mobile": "node scripts/check-mobile.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
