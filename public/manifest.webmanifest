@@ -1,0 +1,20 @@
+{
+  "id": "/human-demo-/",
+  "name": "HUMAN Bâtiment — Experts",
+  "short_name": "HUMAN",
+  "description": "Consultations d'experts du bâtiment.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#172433",
+  "icons": [
+    {
+      "src": "./human-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
