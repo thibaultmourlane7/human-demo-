@@ -34,3 +34,8 @@ Cette branche descend de feature/s12-pwa pour réutiliser le frontend.
 Les sessions Supabase actuelles sont adaptées au navigateur. Leur persistence,
 leurs URL de rappel et la protection des secrets devront être revues pour l'usage WebView.
 Ne jamais copier de secret Stripe ou clé d'administration Supabase dans l'application.
+
+## Parcours artisan local (aperçu facultatif)
+- Composant BuildingIntakeDraft ajouté avec métier, question, contexte, 5 pièces jointes locales.
+- L'activation de l'aperçu est conditionnée à VITE_HUMAN_BUILDING_PREVIEW=true.
+- Aucun upload, aucune création de mission ni débit de crédit : la fonctionnalité métier n'est pas encore déployée.
