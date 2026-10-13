@@ -17,3 +17,9 @@ jobs:
       - run: node scripts/check-building-finance.mjs
       - run: node scripts/check-building-attachments.mjs
       - run: npm run build
+      - name: Android Capacitor project generation smoke test
+        if: github.ref == 'refs/heads/feature/s12-mobile'
+        run: |
+          npx cap add android
+          test -f android/app/src/main/AndroidManifest.xml
+          test -f android/settings.gradle
