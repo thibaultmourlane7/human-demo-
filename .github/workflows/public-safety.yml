@@ -13,6 +13,14 @@ jobs:
         with:
           node-version: 22
       - run: npm install --ignore-scripts --no-audit --no-fund
+      # Temporary lockfile transport for a one-off verified GitHub commit.
+      - name: Export dependency lockfile
+        if: github.ref == 'refs/heads/feature/s12-mobile'
+        run: |
+          echo HUMAN_LOCKFILE_BEGIN
+          base64 -w0 package-lock.json
+          echo
+          echo HUMAN_LOCKFILE_END
       - run: npm run check:public
       - run: node scripts/check-building-attachments.mjs
       - run: npm run build
