@@ -15,6 +15,7 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check:public
       - run: node scripts/check-building-finance.mjs
+      - run: node scripts/check-native-auth.mjs
       - run: node scripts/check-building-experts.mjs
       - run: node scripts/check-building-attachments.mjs
       - run: npm run build
