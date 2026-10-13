@@ -1,0 +1,61 @@
+name: iOS simulator compile (Sprint 12, no signing)
+on:
+  push:
+    branches:
+      - feature/s12-mobile
+    paths:
+      - '.github/workflows/ios-native-ci.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'capacitor.config.ts'
+      - 'src/**'
+      - 'public/**'
+      - 'index.source.html'
+      - 'vite.config.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    runs-on: macos-26
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify Xcode >= 26
+        run: |
+          xcodebuild -version
+          XCODE_MAJOR="$(xcodebuild -version | awk '/^Xcode / {split($2, v, "."); print v[1]}')"
+          test -n "$XCODE_MAJOR"
+          test "$XCODE_MAJOR" -ge 26
+      - name: Install only committed dependencies and build web
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run check:public
+          node scripts/check-building-attachments.mjs
+          node scripts/check-building-finance.mjs
+          node scripts/check-building-experts.mjs
+          npm run build
+      - name: Generate local iOS project using Capacitor SPM
+        run: |
+          npx cap add ios
+          npx cap sync ios
+          test -f ios/App/App.xcodeproj/project.pbxproj
+          test -f ios/App/App/Info.plist
+      - name: Build unsigned iOS Simulator binary
+        timeout-minutes: 16
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/human-ios-derived-data" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+          test -d "$RUNNER_TEMP/human-ios-derived-data/Build/Products/Debug-iphonesimulator/App.app"
