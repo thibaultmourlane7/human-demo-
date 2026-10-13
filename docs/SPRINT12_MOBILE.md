@@ -1,6 +1,6 @@
 # HUMAN BÂTIMENT Sprint 12 — Android / iOS
 
-Status: CONFIGURATION PREPAREE sur feature/s12-mobile, pas de compilation native.
+Status: compilations CI Android Debug et iOS Simulator validées ; aucune installation sur appareil ni signature/distribution.
 Cette branche descend de feature/s12-pwa pour réutiliser le frontend.
 
 ## Réalisé
@@ -23,9 +23,9 @@ Cette branche descend de feature/s12-pwa pour réutiliser le frontend.
    validée avant son exécution.
 
 ## Non réalisé
-- Répertoires natifs android/ et ios/ pas encore générés : dépendances natives
-  et outils de compilation non disponibles dans ce runtime.
-- Aucun build d'app, aucun TestFlight ni Google Play.
+- Répertoires natifs générés temporairement par GitHub Actions, pas encore versionnés dans le dépôt.
+- Configuration réelle des identifiants, domaine, secrets publics et autorisations natives non validée.
+- Builds natifs de validation CI réussis ; aucun TestFlight, Google Play, IPA signée, APK installé ni essai sur appareil.
 - Aucun accès photo natif ni push (fonctionnalités futures soumises à
   permissions explicites et vérification de sécurité).
 - Tests manuels reportés dans le registre central.
@@ -42,13 +42,13 @@ Ne jamais copier de secret Stripe ou clé d'administration Supabase dans l'appli
 
 
 ## Dernière mise à jour
-Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés sur la branche. Les contrôles GitHub valident le build web, PAS les projets natifs Android/iOS. Aucune compilation native exécutée ; lockfile npm désormais présent et contrôlé sur CI.
+Les dépendances Capacitor 8.5.3 et le lockfile npm sont versionnés. Les contrôles GitHub valident désormais le build web, la génération Android/iOS, l'APK Debug et la compilation iOS Simulator ; aucun test matériel ni signature de distribution.
 
 ## Harmonisation PWA/mobile (13 octobre 2026)
 - Même formulaire Bâtiment et même contrat de brouillon que la branche PWA (retour du métier exact obligatoire).
 - Sélection de fichiers locale : jamais téléversée par ce formulaire ; modification du dossier annule la confirmation de sauvegarde précédente.
 - Le service worker ne conserve que le shell et les ressources publiques explicitement autorisées ; test automatisé de rejet des chemins privés.
-- Dépendances natives déclarées mais lockfile toujours absent : installation reproductible et build natif non déclarés réussis.
+- Lockfile versionné et compilations natives CI confirmées ; les tests sur appareil et la configuration d'authentification restent à faire.
 - Redirections/authentification natives, stockage photos, notifications et stores restent à tester après validation distincte.
 
 ## Mise à jour — verrouillage des dépendances (13 octobre 2026)
@@ -65,7 +65,7 @@ Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés su
 - La génération **temporaire** du projet Android par `npx cap add android` a été exécutée dans le runner CI, avec succès.
 - Contrôles confirmés : `android/app/src/main/AndroidManifest.xml` et `android/settings.gradle` créés dans l'environnement de test, après `npm ci` et build web.
 - La génération était un **smoke test** : le dossier natif n'a **pas** été committé au dépôt, et aucun APK/AAB n'a été compilé, signé, installé ou publié.
-- Le projet iOS n'a pas encore été généré ni compilé (environnement macOS/Xcode à préparer).
+- Le projet iOS a ensuite été généré et compilé pour simulateur sur GitHub Actions macOS 26, sans signature ni App Store.
 - Les vérifications d'authentification mobile, stockage natif et notifications restent en attente.
 
 ## Compilation Android de débogage automatisée — contrôlée sur GitHub Actions
@@ -77,3 +77,12 @@ La tâche GitHub Actions `38355346249` a exécuté avec succès :
 - `./gradlew :app:assembleDebug --no-daemon` puis confirmation de l'APK non vide.
 
 Cette compilation confirme un projet Android débogage générable sur l'infrastructure CI, **pas** une application testée sur téléphone ou prête pour Play Store. Le fichier APK de cette exécution n'a pas été publié ni enregistré dans le dépôt et il n'y a pas eu de signature de distribution. Pas de génération ni de build Xcode iOS.
+
+## Vérification iOS et protection des connexions — 13 octobre 2026
+
+- GitHub Actions iOS Simulator réussi : exécution **38358942485** sur `feature/s12-mobile`, avec Xcode 26+, Swift Package Manager, `npx cap add ios`, `npx cap sync ios` et `xcodebuild` sans signature.
+- GitHub Actions Android Debug réussi : exécution **38355346249** avec Java 21, Android API 36 et vérification d'un APK généré non vide.
+- Les compilations ne contiennent pas nécessairement une configuration de production ou de staging connectée : en l'absence des paramètres publics Vite, l'application affiche **Configuration HUMAN manquante**. Ne pas prétendre que la connexion réelle est testée.
+- Les sessions d'URL OAuth et les magic links ne sont pas consommés automatiquement dans les WebViews natives (contrôle `detectSessionInUrl` conditionnel). La connexion par mot de passe reste disponible dans le code ; compatibilité effective non testée sur appareil.
+- Aucun lien universel, App Link, deep-link OAuth ou association de domaine activé ; ne pas activer ces fonctions avant un audit distinct.
+- Aucun artefact publié sur un store, aucune migration appliquée et aucun test humain exécuté.
