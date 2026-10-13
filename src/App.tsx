@@ -5,6 +5,7 @@ import { PwaInstallPanel } from './components/PwaInstallPanel';
 import { MobileEnvironmentNote } from './components/MobileEnvironmentNote';
 import { BuildingIntakeDraft } from './components/BuildingIntakeDraft';
 import { BuildingAttachments } from './components/BuildingAttachments';
+import { BuildingTradeDeclaration } from './components/BuildingTradeDeclaration';
 import { buildingFinancialJourneyEnabled } from './features/buildingFinancialJourney';
 import { AdminArea } from './components/AdminArea';
 import { ExpertProfileForm } from './components/ExpertProfileForm';
@@ -291,6 +292,8 @@ function ExpertArea({ dashboard, finance, session, busy, run, refresh, refreshFi
       <label className="availability-toggle"><input type="checkbox" checked={expert.available} disabled={!expert.verified || busy} onChange={(e) => run(() => humanApi.setExpertAvailability(session, e.target.checked))} /> Disponible pour les missions</label>
       {!expert.verified && <div className="notice">Votre profil doit être validé par HUMAN avant de pouvoir recevoir des missions.</div>}
     </div>
+
+    <BuildingTradeDeclaration session={session} />
 
     <div className="panel form-panel"><div className="panel-heading"><div><p className="eyebrow">Propositions</p><h2>Missions à accepter</h2></div><span className="count-pill">{expert.offers.length}</span></div>
       {!expert.offers.length && <div className="matching-state">{expert.available ? 'Disponible — aucune mission compatible en attente pour le moment.' : 'Vous êtes indisponible. Activez la disponibilité pour recevoir les prochaines missions compatibles.'}</div>}
