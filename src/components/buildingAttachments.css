@@ -1,0 +1,7 @@
+.building-attachments{border-top:1px solid var(--line);margin-top:20px;padding-top:18px;display:grid;gap:10px}
+.building-attachments h3{margin:0}
+.building-attachment-list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.building-attachment-list li{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);padding:10px}
+.building-attachments-add{display:grid;gap:10px}
+.building-attachments-add label{display:grid;gap:6px}
+@media(max-width:600px){.building-attachment-list li{flex-direction:column;align-items:stretch}.building-attachments button{min-height:44px}}
