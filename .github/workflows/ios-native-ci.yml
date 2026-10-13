@@ -39,6 +39,7 @@ jobs:
           npm run check:public
           node scripts/check-building-attachments.mjs
           node scripts/check-building-finance.mjs
+          node scripts/check-native-auth.mjs
           node scripts/check-building-experts.mjs
           npm run build
       - name: Generate local iOS project using Capacitor SPM
