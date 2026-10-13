@@ -4,6 +4,7 @@ import { AuthPanel } from './components/AuthPanel';
 import { PwaInstallPanel } from './components/PwaInstallPanel';
 import { MobileEnvironmentNote } from './components/MobileEnvironmentNote';
 import { BuildingIntakeDraft } from './components/BuildingIntakeDraft';
+import { BuildingAttachments } from './components/BuildingAttachments';
 import { AdminArea } from './components/AdminArea';
 import { ExpertProfileForm } from './components/ExpertProfileForm';
 import { FinancePanel } from './components/FinancePanel';
@@ -243,6 +244,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
         </div>}
         {payment?.state === 'refunded' && <div className="matching-state">Crédits remboursés.</div>}
       </div>
+      {selected.request.category_code === 'building' && <BuildingAttachments key={session.user.id+selected.request.id} requestId={selected.request.id} canUpload={['draft','searching','offered','accepted','in_progress'].includes(selected.request.status)} />}
       <MessageThread session={session} requestId={selected.request.id} canSend={['accepted', 'in_progress', 'answered'].includes(selected.request.status)} defaultOpen />
       {selected.result?.expert_answer && <div className="answer-card"><small>Réponse de l’expert</small><p>{selected.result.expert_answer}</p></div>}
       {selected.request.status === 'answered' && selected.result?.expert_answer && <div className="button-row">
@@ -299,6 +301,7 @@ function ExpertArea({ dashboard, finance, session, busy, run, refresh, refreshFi
       {!expert.jobs.length && <p className="muted">Aucune intervention en cours.</p>}
       {expert.jobs.map((job: HumanJob) => <article className="job-card" key={job.request_id}>
         <div className="status-row"><span>{job.category_label}</span><strong>{statusLabel[job.status] || job.status}</strong></div><h3>{job.question}</h3>{job.context && <p className="muted">{job.context}</p>}
+        {job.category_code === 'building' && <BuildingAttachments key={session.user.id+job.request_id} requestId={job.request_id} />}
         <MessageThread session={session} requestId={job.request_id} canSend={['accepted', 'in_progress', 'answered'].includes(job.status)} />
         {job.status === 'accepted' && (() => {
           const payment = finance?.requests.find((item) => item.request_id === job.request_id) ?? null;
