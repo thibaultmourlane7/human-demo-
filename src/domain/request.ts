@@ -1,4 +1,4 @@
-export type HumanCategory = 'legal' | 'accounting' | 'tax' | 'development';
+export type HumanCategory = 'legal' | 'accounting' | 'tax' | 'development' | 'building';
 export type HumanUrgency = 'normal' | 'urgent';
 export type HumanRequestStatus =
   | 'draft'
