@@ -14,5 +14,6 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check:public
+      - run: node scripts/check-building-finance.mjs
       - run: node scripts/check-building-attachments.mjs
       - run: npm run build
