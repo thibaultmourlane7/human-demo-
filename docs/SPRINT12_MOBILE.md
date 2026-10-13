@@ -14,7 +14,7 @@ Cette branche descend de feature/s12-pwa pour réutiliser le frontend.
 ## Construction locale après validation des environnements
 1. Sur une machine autorisée avec Node 22 : npm install (verrouiller ensuite les dépendances avec package-lock.json avant toute livraison).
 2. Capacitor Core/CLI/Android/iOS sont déclarés à la version 8.5.3 dans package.json.
-   Générer/vérifier le fichier package-lock.json avant une livraison native reproductible.
+   Le package-lock.json est désormais versionné ; utiliser npm ci sur un environnement de build autorisé.
 3. npm run mobile:android:init / npm run mobile:ios:init (dans les environnements adaptés).
 4. npm run mobile:sync, ouvrir Android Studio / Xcode.
 5. Configurer Universal Links/App Links et les redirections Supabase Auth spécifiques
@@ -42,7 +42,7 @@ Ne jamais copier de secret Stripe ou clé d'administration Supabase dans l'appli
 
 
 ## Dernière mise à jour
-Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés sur la branche. Les contrôles GitHub valident le build web, PAS les projets natifs Android/iOS. Aucune compilation native exécutée et aucun lockfile généré à ce stade.
+Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés sur la branche. Les contrôles GitHub valident le build web, PAS les projets natifs Android/iOS. Aucune compilation native exécutée ; lockfile npm désormais présent et contrôlé sur CI.
 
 ## Harmonisation PWA/mobile (13 octobre 2026)
 - Même formulaire Bâtiment et même contrat de brouillon que la branche PWA (retour du métier exact obligatoire).
@@ -50,3 +50,11 @@ Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés su
 - Le service worker ne conserve que le shell et les ressources publiques explicitement autorisées ; test automatisé de rejet des chemins privés.
 - Dépendances natives déclarées mais lockfile toujours absent : installation reproductible et build natif non déclarés réussis.
 - Redirections/authentification natives, stockage photos, notifications et stores restent à tester après validation distincte.
+
+## Mise à jour — verrouillage des dépendances (13 octobre 2026)
+
+- Le `package-lock.json` a été **généré par npm sur GitHub Actions avec Node 22**, puis committé sur `feature/s12-mobile`.
+- La validation CI utilise désormais `npm ci` plutôt que `npm install`, afin de refuser les divergences entre le manifeste et le verrou de dépendances.
+- Les quatre dépendances Capacitor (core, CLI, iOS, Android) restent à la version épinglée 8.5.3.
+- Cette étape garantit un jeu de dépendances npm reproductible ; elle ne remplace pas la génération Android/iOS, les tests d'appareils, la signature et les validations des stores.
+- **Aucun projet natif n'a été généré ou compilé** par cette étape.
