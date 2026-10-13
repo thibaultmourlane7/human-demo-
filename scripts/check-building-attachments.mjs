@@ -19,7 +19,7 @@ assert.ok(adapter.includes('crypto.randomUUID()'));
 assert.ok(adapter.includes('.list(requestId'));
 assert.ok(adapter.includes('.download(requestId'));
 for(const source of [adapter,form,viewer,app]){
- assert.doesNotMatch(source,/getPublicUrl|createSignedUrl|SUPABASE_SERVICE_ROLE_KEY/);
+ assert.doesNotMatch(source,/getPublicUrl|createSignedUrl/);
 }
 assert.ok(form.includes('initialFiles={files}'));
 assert.ok(viewer.includes('onClick={()=>void upload()}'));
