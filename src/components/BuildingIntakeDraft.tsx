@@ -42,7 +42,7 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
      setError('Choisissez au maximum cinq photos JPG/PNG/WebP ou PDF de 10 Mo chacun.');
      setFiles([]);setPrepared(false);setSavedId(null);return;
    }
-   setError(null);setFiles(selected);setPrepared(false);
+   setError(null);setFiles(selected);setPrepared(false);setSavedId(null);
  }
  async function saveDraft() {
    if(!prepared||!tradeCode||saving)return;
@@ -83,7 +83,7 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
     </label>
     <label>Contexte du chantier
       <textarea value={context} maxLength={10000} rows={3}
-       onChange={event=>{setContext(event.target.value);setPrepared(false)}}
+       onChange={event=>{setContext(event.target.value);setPrepared(false);setSavedId(null)}}
        placeholder="Nature des travaux, âge du bâtiment, contraintes connues…" />
     </label>
     <label>Photos et PDF (facultatif, conservation locale uniquement)

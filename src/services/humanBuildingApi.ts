@@ -49,7 +49,8 @@ export async function createBuildingDraft(
  if(!data||typeof data!=='object')throw new Error('REPONSE_API_INVALIDE');
  const receipt=data as Partial<HumanBuildingDraftReceipt>;
  if(receipt.status!=='draft'||receipt.matching_started!==false
-   ||receipt.payment_accepted!==false||typeof receipt.request_id!=='string'){
+   ||receipt.payment_accepted!==false||receipt.building_trade_code!==draft.tradeCode
+   ||typeof receipt.request_id!=='string'){
   throw new Error('VALIDATION_BROUILLON_INCOMPLETE');
  }
  return receipt as HumanBuildingDraftReceipt;

@@ -43,3 +43,10 @@ Ne jamais copier de secret Stripe ou clé d'administration Supabase dans l'appli
 
 ## Dernière mise à jour
 Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés sur la branche. Les contrôles GitHub valident le build web, PAS les projets natifs Android/iOS. Aucune compilation native exécutée et aucun lockfile généré à ce stade.
+
+## Harmonisation PWA/mobile (13 octobre 2026)
+- Même formulaire Bâtiment et même contrat de brouillon que la branche PWA (retour du métier exact obligatoire).
+- Sélection de fichiers locale : jamais téléversée par ce formulaire ; modification du dossier annule la confirmation de sauvegarde précédente.
+- Le service worker ne conserve que le shell et les ressources publiques explicitement autorisées ; test automatisé de rejet des chemins privés.
+- Dépendances natives déclarées mais lockfile toujours absent : installation reproductible et build natif non déclarés réussis.
+- Redirections/authentification natives, stockage photos, notifications et stores restent à tester après validation distincte.
