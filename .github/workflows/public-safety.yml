@@ -17,9 +17,26 @@ jobs:
       - run: node scripts/check-building-finance.mjs
       - run: node scripts/check-building-attachments.mjs
       - run: npm run build
+      - name: Configure Java 21 for Capacitor 8
+        if: github.ref == 'refs/heads/feature/s12-mobile'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Configure Android SDK
+        if: github.ref == 'refs/heads/feature/s12-mobile'
+        uses: android-actions/setup-android@v3
       - name: Android Capacitor project generation smoke test
         if: github.ref == 'refs/heads/feature/s12-mobile'
         run: |
           npx cap add android
           test -f android/app/src/main/AndroidManifest.xml
           test -f android/settings.gradle
+      - name: Compile unsigned-distribution Android debug APK (CI only)
+        if: github.ref == 'refs/heads/feature/s12-mobile'
+        timeout-minutes: 18
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew :app:assembleDebug --no-daemon
+          test -s app/build/outputs/apk/debug/app-debug.apk
