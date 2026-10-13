@@ -5,6 +5,7 @@ import { PwaInstallPanel } from './components/PwaInstallPanel';
 import { MobileEnvironmentNote } from './components/MobileEnvironmentNote';
 import { BuildingIntakeDraft } from './components/BuildingIntakeDraft';
 import { BuildingAttachments } from './components/BuildingAttachments';
+import { buildingFinancialJourneyEnabled } from './features/buildingFinancialJourney';
 import { AdminArea } from './components/AdminArea';
 import { ExpertProfileForm } from './components/ExpertProfileForm';
 import { FinancePanel } from './components/FinancePanel';
@@ -185,7 +186,8 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
   setSelected: (value: HumanRequestDetail | null) => void;
 }) {
   const payment = selected ? finance?.requests.find((item) => item.request_id === selected.request.id) ?? null : null;
-  const canQuote = !!selected && ['draft','searching','offered','accepted'].includes(selected.request.status);
+  const buildingFinanceBlocked = selected?.request.category_code === 'building' && !buildingFinancialJourneyEnabled();
+  const canQuote = !!selected && !buildingFinanceBlocked && ['draft','searching','offered','accepted'].includes(selected.request.status);
   const [requestedMinutes, setRequestedMinutes] = useState(10);
 
   return <section className="workspace live-workspace">
@@ -211,6 +213,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
       <div className="status-row"><span>Statut</span><strong>{statusLabel[selected.request.status] || selected.request.status}</strong></div>
       {selected.request.status === 'searching' && <div className="matching-state">Recherche automatique active — HUMAN attend le prochain expert compatible disponible.</div>}
       {selected.request.status === 'offered' && <div className="matching-state signal">Un expert compatible a été sollicité. En cas de refus ou d’expiration, HUMAN passe automatiquement au suivant.</div>}
+      {buildingFinanceBlocked && <div className="notice">Bâtiment : devis, réservation de crédits et recherche d’expert non activés. Le dossier reste en préparation.</div>}
       <div className="payment-box">
         <div className="status-row"><span>Financement</span><strong>{payment ? payment.state : 'Non chiffré'}</strong></div>
         {!payment && canQuote && <div className="minute-quote">
@@ -230,7 +233,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
             {payment.billing_block_minutes ? ` · bloc ${payment.billing_block_minutes} min` : ''}
           </p>
           <p className="muted">Le temps non utilisé sera recrédité automatiquement à la clôture.</p>
-          <button className="primary-button" disabled={busy || !finance || finance.wallet.available_cents < payment.total_cents} onClick={() => void run(async () => {
+          <button className="primary-button" disabled={busy || !!buildingFinanceBlocked || !finance || finance.wallet.available_cents < payment.total_cents} onClick={() => void run(async () => {
             if (!payment.quote_id) return;
             await humanApi.acceptQuote(session, payment.quote_id);
             await refreshFinance(session);
@@ -305,7 +308,7 @@ function ExpertArea({ dashboard, finance, session, busy, run, refresh, refreshFi
         <MessageThread session={session} requestId={job.request_id} canSend={['accepted', 'in_progress', 'answered'].includes(job.status)} />
         {job.status === 'accepted' && (() => {
           const payment = finance?.requests.find((item) => item.request_id === job.request_id) ?? null;
-          const blocked = payment?.state === 'quoted';
+          const blocked = payment?.state === 'quoted' || (job.category_code === 'building' && (!buildingFinancialJourneyEnabled() || payment?.state !== 'reserved'));
           return <div>
             {payment?.expert_rate_per_minute_cents != null && <p className="offer-expiry">Rémunération : {(payment.expert_rate_per_minute_cents / 100).toFixed(2)} €/min · {payment.reserved_minutes ?? '?'} min réservées</p>}
             <div className="button-row">
