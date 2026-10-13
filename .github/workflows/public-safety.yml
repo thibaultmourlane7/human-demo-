@@ -15,4 +15,5 @@ jobs:
       - run: npm install --ignore-scripts --no-audit --no-fund
       - run: npm run check:public
       - run: node scripts/check-building-finance.mjs
+      - run: node scripts/check-building-experts.mjs
       - run: npm run build
