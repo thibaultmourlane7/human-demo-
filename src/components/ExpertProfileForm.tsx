@@ -1,11 +1,13 @@
 import { FormEvent, useState } from 'react';
 import type { HumanCategory } from '../domain/request';
+import { buildingExpertWorkflowEnabled } from '../features/buildingExperts';
 
 const categories: Array<{ code: HumanCategory; label: string }> = [
   { code: 'legal', label: 'Droit français' },
   { code: 'accounting', label: 'Comptabilité française' },
   { code: 'tax', label: 'Fiscalité française' },
   { code: 'development', label: 'Développement informatique' },
+  ...(buildingExpertWorkflowEnabled() ? [{code: 'building' as const,label: 'Bâtiment (qualifications à déclarer et faire vérifier)'}] : []),
 ];
 
 export function ExpertProfileForm({ onSave, busy }: {
