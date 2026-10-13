@@ -23,13 +23,11 @@ assert.match(pkg.scripts['mobile:sync'],/cap sync/);
 assert.match(pkg.scripts['mobile:android:init'],/cap add android/);
 assert.match(pkg.scripts['mobile:ios:init'],/cap add ios/);
 assert.ok(existsSync('docs/SPRINT12_MOBILE.md'));
-if (!existsSync('package-lock.json')) {
- console.warn('ATTENTION : package-lock.json absent ; livraison native non reproductible à ce stade.');
-} else {
- const lock=JSON.parse(read('package-lock.json'));
- for (const name of ['@capacitor/core','@capacitor/cli','@capacitor/android','@capacitor/ios']) {
-  assert.equal(lock.packages?.['node_modules/'+name]?.version,'8.5.3',
-   name+' must be pinned in the native lockfile');
- }
+assert.ok(existsSync('package-lock.json'),'Native builds require a committed package-lock.json');
+const lock=JSON.parse(read('package-lock.json'));
+assert.equal(lock.lockfileVersion,3);
+for (const name of ['@capacitor/core','@capacitor/cli','@capacitor/android','@capacitor/ios']) {
+ assert.equal(lock.packages?.['node_modules/'+name]?.version,'8.5.3',
+  name+' must remain pinned in the native lockfile');
 }
 console.log('HUMAN mobile configuration checks passed. No native app compiled.');
