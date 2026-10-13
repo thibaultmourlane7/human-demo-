@@ -50,7 +50,10 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
    try{
      const receipt=await createBuildingDraft(session,{tradeCode,question:question.trim(),context:context.trim()});
      setSavedId(receipt.request_id);
-     if(onSaved)await onSaved();
+     if(onSaved) {
+       try { await onSaved(); }
+       catch { setError('Brouillon enregistré, mais les listes n’ont pas pu être actualisées.'); }
+     }
    }catch{
      setError('Impossible d’enregistrer le brouillon. Vérifiez que le service Bâtiment est activé.');
    }finally{setSaving(false);}
@@ -71,23 +74,23 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
    lorsqu’il sera activé, ne déclenchera ni mise en relation ni dépense.</p>
    <form onSubmit={prepare}>
     <label>Métier concerné
-      <select required value={tradeCode} onChange={event=>{setTradeCode(event.target.value);setPrepared(false);setSavedId(null)}}>
+      <select required disabled={saving} value={tradeCode} onChange={event=>{setTradeCode(event.target.value);setPrepared(false);setSavedId(null)}}>
         <option value="">Choisir un métier</option>
         {TRADES.map(trade=><option key={trade.code} value={trade.code}>{trade.name}</option>)}
       </select>
     </label>
     <label>Question technique
-      <textarea value={question} minLength={10} maxLength={8000} rows={4} required
+      <textarea disabled={saving} value={question} minLength={10} maxLength={8000} rows={4} required
        onChange={event=>{setQuestion(event.target.value);setPrepared(false);setSavedId(null)}}
        placeholder="Décrivez les symptômes, dimensions, matériaux, contexte du chantier…" />
     </label>
     <label>Contexte du chantier
-      <textarea value={context} maxLength={10000} rows={3}
+      <textarea disabled={saving} value={context} maxLength={10000} rows={3}
        onChange={event=>{setContext(event.target.value);setPrepared(false);setSavedId(null)}}
        placeholder="Nature des travaux, âge du bâtiment, contraintes connues…" />
     </label>
     <label>Photos et PDF (facultatif, conservation locale uniquement)
-      <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple
+      <input disabled={saving} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple
        onChange={onFiles} aria-describedby="building-attachments-hint" />
     </label>
     <p className="muted" id="building-attachments-hint">Jusqu'à cinq fichiers de 10 Mo.

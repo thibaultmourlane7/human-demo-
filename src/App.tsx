@@ -160,7 +160,7 @@ export default function App() {
       ) : dashboard.profile?.role === 'expert' ? (
         <ExpertArea dashboard={dashboard} finance={finance} session={session} busy={busy} run={run} refresh={syncDashboard} refreshFinance={syncFinance} answerDraft={answerDraft} setAnswerDraft={setAnswerDraft} />
       ) : (
-        <UserArea dashboard={dashboard} finance={finance} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} refreshFinance={syncFinance} setSelected={setSelected} />
+        <UserArea dashboard={dashboard} finance={finance} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} refreshFinance={syncFinance} refreshDashboard={syncDashboard} setSelected={setSelected} />
       )}
     </>}
 
@@ -168,7 +168,7 @@ export default function App() {
   </main>;
 }
 
-function UserArea({ dashboard, finance, busy, createRequest, openRequest, selected, session, run, refreshFinance, setSelected }: {
+function UserArea({ dashboard, finance, busy, createRequest, openRequest, selected, session, run, refreshFinance, refreshDashboard, setSelected }: {
   dashboard: HumanDashboard;
   finance: HumanFinanceDashboard | null;
   busy: boolean;
@@ -178,6 +178,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
   session: Session;
   run: (action: () => Promise<unknown>, reload?: boolean) => Promise<void>;
   refreshFinance: (session: Session) => Promise<void>;
+  refreshDashboard: (session: Session) => Promise<void>;
   setSelected: (value: HumanRequestDetail | null) => void;
 }) {
   const payment = selected ? finance?.requests.find((item) => item.request_id === selected.request.id) ?? null : null;
@@ -185,7 +186,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
   const [requestedMinutes, setRequestedMinutes] = useState(10);
 
   return <section className="workspace live-workspace">
-    {import.meta.env.VITE_HUMAN_BUILDING_PREVIEW === 'true' && <BuildingIntakeDraft session={session} onSaved={() => refreshFinance(session)} />}
+    {import.meta.env.VITE_HUMAN_BUILDING_PREVIEW === 'true' && <BuildingIntakeDraft session={session} onSaved={async () => { await Promise.all([refreshDashboard(session), refreshFinance(session)]); }} />}
     <div className="panel form-panel">
       <div className="panel-heading"><div><p className="eyebrow">Nouvelle mission</p><h2>Demander un expert</h2></div><span className="demo-pill live-pill">Connecté</span></div>
       <RequestForm onSubmit={createRequest} disabled={busy} />
