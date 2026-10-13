@@ -58,3 +58,12 @@ Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés su
 - Les quatre dépendances Capacitor (core, CLI, iOS, Android) restent à la version épinglée 8.5.3.
 - Cette étape garantit un jeu de dépendances npm reproductible ; elle ne remplace pas la génération Android/iOS, les tests d'appareils, la signature et les validations des stores.
 - **Aucun projet natif n'a été généré ou compilé** par cette étape.
+
+
+## Contrôle Capacitor Android — GitHub Actions (13 octobre 2026)
+
+- La génération **temporaire** du projet Android par `npx cap add android` a été exécutée dans le runner CI, avec succès.
+- Contrôles confirmés : `android/app/src/main/AndroidManifest.xml` et `android/settings.gradle` créés dans l'environnement de test, après `npm ci` et build web.
+- La génération était un **smoke test** : le dossier natif n'a **pas** été committé au dépôt, et aucun APK/AAB n'a été compilé, signé, installé ou publié.
+- Le projet iOS n'a pas encore été généré ni compilé (environnement macOS/Xcode à préparer).
+- Les vérifications d'authentification mobile, stockage natif et notifications restent en attente.
