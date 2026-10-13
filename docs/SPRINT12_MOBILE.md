@@ -67,3 +67,13 @@ Les dépendances Capacitor 8.5.3 et les scripts de génération sont poussés su
 - La génération était un **smoke test** : le dossier natif n'a **pas** été committé au dépôt, et aucun APK/AAB n'a été compilé, signé, installé ou publié.
 - Le projet iOS n'a pas encore été généré ni compilé (environnement macOS/Xcode à préparer).
 - Les vérifications d'authentification mobile, stockage natif et notifications restent en attente.
+
+## Compilation Android de débogage automatisée — contrôlée sur GitHub Actions
+
+La tâche GitHub Actions `38355346249` a exécuté avec succès :
+- `npm ci`, contrôles de confidentialité, tests de verrouillage financier et `npm run build` ;
+- installation de Java 21 et Android SDK API 36 ;
+- `npx cap add android` pour générer le projet natif dans le runner ;
+- `./gradlew :app:assembleDebug --no-daemon` puis confirmation de l'APK non vide.
+
+Cette compilation confirme un projet Android débogage générable sur l'infrastructure CI, **pas** une application testée sur téléphone ou prête pour Play Store. Le fichier APK de cette exécution n'a pas été publié ni enregistré dans le dépôt et il n'y a pas eu de signature de distribution. Pas de génération ni de build Xcode iOS.
