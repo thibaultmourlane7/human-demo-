@@ -6,7 +6,7 @@ interface Props {
   disabled?: boolean;
 }
 
-const labels: Record<HumanCategory, string> = {
+const labels: Record<Exclude<HumanCategory, 'building'>, string> = {
   legal: 'Droit français',
   accounting: 'Comptabilité française',
   tax: 'Fiscalité française',
@@ -14,7 +14,7 @@ const labels: Record<HumanCategory, string> = {
 };
 
 export function RequestForm({ onSubmit, disabled = false }: Props) {
-  const [category, setCategory] = useState<HumanCategory>('legal');
+  const [category, setCategory] = useState<Exclude<HumanCategory, 'building'>>('legal');
   const [question, setQuestion] = useState('');
   const [context, setContext] = useState('');
   const [urgency, setUrgency] = useState<HumanUrgency>('normal');
@@ -38,7 +38,7 @@ export function RequestForm({ onSubmit, disabled = false }: Props) {
     <form className="request-form" onSubmit={handleSubmit}>
       <div className="form-grid">
         <label>Domaine
-          <select value={category} onChange={(e) => setCategory(e.target.value as HumanCategory)} disabled={disabled}>
+          <select value={category} onChange={(e) => setCategory(e.target.value as Exclude<HumanCategory, 'building'>)} disabled={disabled}>
             {Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
