@@ -242,6 +242,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
           {finance && finance.wallet.available_cents < payment.total_cents && <div className="notice">Crédits insuffisants. Un administrateur doit créditer votre compte pour le test.</div>}
         </>}
         {payment?.state === 'reserved' && <div className="matching-state signal">Crédits réservés — {payment.reserved_minutes ?? '?'} min disponibles pour l’intervention.</div>}
+        {selected.request.category_code === 'building' && selected.request.status === 'draft' && payment?.state === 'reserved' && buildingFinancialJourneyEnabled() && <button className="primary-button" disabled={busy} onClick={() => void run(async () => { await humanApi.startMatching(session, selected.request.id); setSelected(await humanApi.getRequestDetail(session, selected.request.id)); })}>Rechercher un expert qualifié</button>}
         {payment?.state === 'settled' && <div className="matching-state signal">
           Mission réglée · {payment.billed_minutes ?? '?'} min facturées
           {(payment.refunded_cents ?? 0) > 0 ? ` · ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format((payment.refunded_cents ?? 0) / 100)} recrédités` : ''}
