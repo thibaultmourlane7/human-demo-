@@ -10,7 +10,7 @@ interface Props {
   onRefresh: () => Promise<void>;
 }
 
-const categoryLabel: Record<HumanCategory, string> = {
+const categoryLabel: Partial<Record<HumanCategory, string>> = {
   legal: 'Droit français',
   accounting: 'Comptabilité',
   tax: 'Fiscalité',
@@ -33,7 +33,7 @@ function euros(cents: number, currency = 'EUR') {
 }
 
 export function FinancePanel({ session, finance, role, onRefresh }: Props) {
-  const [category, setCategory] = useState<HumanCategory>('legal');
+  const [category, setCategory] = useState<Exclude<HumanCategory, 'building'>>('legal');
   const [clientRate, setClientRate] = useState('1.00');
   const [expertRate, setExpertRate] = useState('0.70');
   const [blockMinutes, setBlockMinutes] = useState('10');
@@ -197,7 +197,7 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
         <div className="finance-card">
           <h3>Tarification à la minute</h3>
           <label>Domaine
-            <select value={category} onChange={(e) => setCategory(e.target.value as HumanCategory)}>
+            <select value={category} onChange={(e) => setCategory(e.target.value as Exclude<HumanCategory, 'building'>)}>
               {Object.entries(categoryLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
           </label>
