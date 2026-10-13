@@ -1,6 +1,7 @@
 import {useState,type ChangeEvent,type FormEvent} from 'react';
 import type {Session} from '@supabase/supabase-js';
 import {createBuildingDraft} from '../services/humanBuildingApi';
+import {BuildingAttachments} from './BuildingAttachments';
 
 /** UI catalogue only. The server-side trade catalogue remains authoritative. */
 const TRADES=[
@@ -90,7 +91,7 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
        placeholder="Nature des travaux, âge du bâtiment, contraintes connues…" />
     </label>
     <label>Photos et PDF (facultatif, conservation locale uniquement)
-      <input disabled={saving} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple
+      <input disabled={saving||!!savedId} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple
        onChange={onFiles} aria-describedby="building-attachments-hint" />
     </label>
     <p className="muted" id="building-attachments-hint">Jusqu'à cinq fichiers de 10 Mo.
@@ -106,8 +107,9 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
        {saving?'Enregistrement…':'Enregistrer le brouillon (sans fichiers)'}
       </button>}
     {savedId&&<p role="status" className="building-intake-ready">
-      Brouillon enregistré sous la référence {savedId}. Aucun fichier transmis, aucun expert contacté, aucun crédit débité.
+      Brouillon enregistré sous la référence {savedId}. Aucun transfert automatique, aucun expert contacté, aucun crédit débité.
     </p>}
+    {savedId&&<BuildingAttachments key={savedId} requestId={savedId} canUpload initialFiles={files} />}
    </form>
  </section>;
 }
