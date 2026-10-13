@@ -2,22 +2,9 @@ import {useState,type ChangeEvent,type FormEvent} from 'react';
 import type {Session} from '@supabase/supabase-js';
 import {createBuildingDraft} from '../services/humanBuildingApi';
 import {BuildingAttachments} from './BuildingAttachments';
+import {BUILDING_TRADES} from '../features/buildingExperts';
 
-/** UI catalogue only. The server-side trade catalogue remains authoritative. */
-const TRADES=[
- {code:'roofing',name:'Couverture'},
- {code:'timber',name:'Charpente'},
- {code:'sheet_metal',name:'Zinguerie'},
- {code:'masonry',name:'Maçonnerie et gros œuvre'},
- {code:'plumbing',name:'Plomberie et sanitaire'},
- {code:'heating',name:'Chauffage et ventilation'},
- {code:'electrical',name:'Électricité'},
- {code:'carpentry',name:'Menuiserie'},
- {code:'insulation',name:'Isolation et plâtrerie'},
- {code:'waterproofing',name:'Étanchéité et façades'},
- {code:'earthworks',name:'Terrassement et aménagement extérieur'},
- {code:'diagnostics',name:'Expertise et diagnostic technique'},
-] as const;
+const TRADES=BUILDING_TRADES;
 
 const ALLOWED_TYPES=new Set([
  'image/jpeg','image/png','image/webp','application/pdf',
