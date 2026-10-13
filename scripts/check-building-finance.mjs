@@ -13,6 +13,8 @@ assert.ok(app.includes("buildingFinanceBlocked = selected?.request.category_code
 assert.ok(app.includes("!buildingFinanceBlocked && ['draft'"));
 assert.ok(app.includes("busy || !!buildingFinanceBlocked"));
 assert.ok(app.includes("job.category_code === 'building' && (!buildingFinancialJourneyEnabled() || payment?.state !== 'reserved')"));
+assert.ok(app.includes("selected.request.category_code === 'building' && selected.request.status === 'draft' && payment?.state === 'reserved' && buildingFinancialJourneyEnabled()"), 'building match requires explicitly enabled finance, draft and reservation');
+assert.ok(app.includes('Rechercher un expert qualifié'), 'artisans must explicitly start expert matching after reservation');
 assert.ok(request.includes("Exclude<HumanCategory, 'building'>"));
 assert.ok(finance.includes("Exclude<HumanCategory, 'building'>"));
 console.log('OK — Bâtiment pricing, credit reservation and work start are locked until explicit activation.');
