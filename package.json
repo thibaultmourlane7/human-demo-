@@ -7,7 +7,7 @@
     "dev": "cp index.source.html index.html && vite",
     "build": "cp index.source.html index.html && npm run build:raw",
     "preview": "vite preview",
-    "check:public": "node scripts/check-public-boundary.mjs && node scripts/check-pwa-cache.mjs",
+    "check:public": "node scripts/check-public-boundary.mjs && node scripts/check-pwa-cache.mjs && node scripts/check-building-attachments.mjs",
     "build:raw": "tsc -b && vite build"
   },
   "dependencies": {
