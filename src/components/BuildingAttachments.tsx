@@ -1,3 +1,4 @@
+import './buildingAttachments.css';
 import {useEffect,useState,type ChangeEvent} from 'react';
 import {
  buildingAttachmentFeatureEnabled,downloadBuildingAttachment,listBuildingAttachments,
