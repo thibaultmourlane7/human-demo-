@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthPanel } from './components/AuthPanel';
+import { PwaInstallPanel } from './components/PwaInstallPanel';
+import { BuildingIntakeDraft } from './components/BuildingIntakeDraft';
+import { BuildingAttachments } from './components/BuildingAttachments';
+import { BuildingTradeDeclaration } from './components/BuildingTradeDeclaration';
+import { buildingFinancialJourneyEnabled } from './features/buildingFinancialJourney';
 import { AdminArea } from './components/AdminArea';
 import { ExpertProfileForm } from './components/ExpertProfileForm';
 import { FinancePanel } from './components/FinancePanel';
@@ -123,6 +128,7 @@ export default function App() {
       </div>
       {session && <div className="top-actions"><span>{session.user.email}</span><button className="secondary-button" onClick={() => supabase.auth.signOut()}>Déconnexion</button></div>}
     </header>
+    <PwaInstallPanel />
 
     <section className="hero compact-hero human-hero">
       <div className="hero-copy">
@@ -157,7 +163,7 @@ export default function App() {
       ) : dashboard.profile?.role === 'expert' ? (
         <ExpertArea dashboard={dashboard} finance={finance} session={session} busy={busy} run={run} refresh={syncDashboard} refreshFinance={syncFinance} answerDraft={answerDraft} setAnswerDraft={setAnswerDraft} />
       ) : (
-        <UserArea dashboard={dashboard} finance={finance} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} refreshFinance={syncFinance} setSelected={setSelected} />
+        <UserArea dashboard={dashboard} finance={finance} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} refreshFinance={syncFinance} refreshDashboard={syncDashboard} setSelected={setSelected} />
       )}
     </>}
 
@@ -165,7 +171,7 @@ export default function App() {
   </main>;
 }
 
-function UserArea({ dashboard, finance, busy, createRequest, openRequest, selected, session, run, refreshFinance, setSelected }: {
+function UserArea({ dashboard, finance, busy, createRequest, openRequest, selected, session, run, refreshFinance, refreshDashboard, setSelected }: {
   dashboard: HumanDashboard;
   finance: HumanFinanceDashboard | null;
   busy: boolean;
@@ -175,13 +181,16 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
   session: Session;
   run: (action: () => Promise<unknown>, reload?: boolean) => Promise<void>;
   refreshFinance: (session: Session) => Promise<void>;
+  refreshDashboard: (session: Session) => Promise<void>;
   setSelected: (value: HumanRequestDetail | null) => void;
 }) {
   const payment = selected ? finance?.requests.find((item) => item.request_id === selected.request.id) ?? null : null;
-  const canQuote = !!selected && ['draft','searching','offered','accepted'].includes(selected.request.status);
+  const buildingFinanceBlocked = selected?.request.category_code === 'building' && !buildingFinancialJourneyEnabled();
+  const canQuote = !!selected && !buildingFinanceBlocked && ['draft','searching','offered','accepted'].includes(selected.request.status);
   const [requestedMinutes, setRequestedMinutes] = useState(10);
 
   return <section className="workspace live-workspace">
+    {import.meta.env.VITE_HUMAN_BUILDING_PREVIEW === 'true' && <BuildingIntakeDraft session={session} onSaved={async () => { await Promise.all([refreshDashboard(session), refreshFinance(session)]); }} />}
     <div className="panel form-panel">
       <div className="panel-heading"><div><p className="eyebrow">Nouvelle mission</p><h2>Demander un expert</h2></div><span className="demo-pill live-pill">Connecté</span></div>
       <RequestForm onSubmit={createRequest} disabled={busy} />
@@ -203,6 +212,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
       <div className="status-row"><span>Statut</span><strong>{statusLabel[selected.request.status] || selected.request.status}</strong></div>
       {selected.request.status === 'searching' && <div className="matching-state">Recherche automatique active — HUMAN attend le prochain expert compatible disponible.</div>}
       {selected.request.status === 'offered' && <div className="matching-state signal">Un expert compatible a été sollicité. En cas de refus ou d’expiration, HUMAN passe automatiquement au suivant.</div>}
+      {buildingFinanceBlocked && <div className="notice">Bâtiment : devis, réservation de crédits et recherche d’expert non activés. Le dossier reste en préparation.</div>}
       <div className="payment-box">
         <div className="status-row"><span>Financement</span><strong>{payment ? payment.state : 'Non chiffré'}</strong></div>
         {!payment && canQuote && <div className="minute-quote">
@@ -222,7 +232,7 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
             {payment.billing_block_minutes ? ` · bloc ${payment.billing_block_minutes} min` : ''}
           </p>
           <p className="muted">Le temps non utilisé sera recrédité automatiquement à la clôture.</p>
-          <button className="primary-button" disabled={busy || !finance || finance.wallet.available_cents < payment.total_cents} onClick={() => void run(async () => {
+          <button className="primary-button" disabled={busy || !!buildingFinanceBlocked || !finance || finance.wallet.available_cents < payment.total_cents} onClick={() => void run(async () => {
             if (!payment.quote_id) return;
             await humanApi.acceptQuote(session, payment.quote_id);
             await refreshFinance(session);
@@ -230,12 +240,14 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
           {finance && finance.wallet.available_cents < payment.total_cents && <div className="notice">Crédits insuffisants. Un administrateur doit créditer votre compte pour le test.</div>}
         </>}
         {payment?.state === 'reserved' && <div className="matching-state signal">Crédits réservés — {payment.reserved_minutes ?? '?'} min disponibles pour l’intervention.</div>}
+        {selected.request.category_code === 'building' && selected.request.status === 'draft' && payment?.state === 'reserved' && buildingFinancialJourneyEnabled() && <button className="primary-button" disabled={busy} onClick={() => void run(async () => { await humanApi.startMatching(session, selected.request.id); setSelected(await humanApi.getRequestDetail(session, selected.request.id)); })}>Rechercher un expert qualifié</button>}
         {payment?.state === 'settled' && <div className="matching-state signal">
           Mission réglée · {payment.billed_minutes ?? '?'} min facturées
           {(payment.refunded_cents ?? 0) > 0 ? ` · ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency_code }).format((payment.refunded_cents ?? 0) / 100)} recrédités` : ''}
         </div>}
         {payment?.state === 'refunded' && <div className="matching-state">Crédits remboursés.</div>}
       </div>
+      {selected.request.category_code === 'building' && <BuildingAttachments key={session.user.id+selected.request.id} requestId={selected.request.id} canUpload={['draft','searching','offered','accepted','in_progress'].includes(selected.request.status)} />}
       <MessageThread session={session} requestId={selected.request.id} canSend={['accepted', 'in_progress', 'answered'].includes(selected.request.status)} defaultOpen />
       {selected.result?.expert_answer && <div className="answer-card"><small>Réponse de l’expert</small><p>{selected.result.expert_answer}</p></div>}
       {selected.request.status === 'answered' && selected.result?.expert_answer && <div className="button-row">
@@ -280,6 +292,8 @@ function ExpertArea({ dashboard, finance, session, busy, run, refresh, refreshFi
       {!expert.verified && <div className="notice">Votre profil doit être validé par HUMAN avant de pouvoir recevoir des missions.</div>}
     </div>
 
+    <BuildingTradeDeclaration session={session} />
+
     <div className="panel form-panel"><div className="panel-heading"><div><p className="eyebrow">Propositions</p><h2>Missions à accepter</h2></div><span className="count-pill">{expert.offers.length}</span></div>
       {!expert.offers.length && <div className="matching-state">{expert.available ? 'Disponible — aucune mission compatible en attente pour le moment.' : 'Vous êtes indisponible. Activez la disponibilité pour recevoir les prochaines missions compatibles.'}</div>}
       {expert.offers.map((offer) => <article className="offer-card" key={offer.match_id}>
@@ -292,10 +306,11 @@ function ExpertArea({ dashboard, finance, session, busy, run, refresh, refreshFi
       {!expert.jobs.length && <p className="muted">Aucune intervention en cours.</p>}
       {expert.jobs.map((job: HumanJob) => <article className="job-card" key={job.request_id}>
         <div className="status-row"><span>{job.category_label}</span><strong>{statusLabel[job.status] || job.status}</strong></div><h3>{job.question}</h3>{job.context && <p className="muted">{job.context}</p>}
+        {job.category_code === 'building' && <BuildingAttachments key={session.user.id+job.request_id} requestId={job.request_id} />}
         <MessageThread session={session} requestId={job.request_id} canSend={['accepted', 'in_progress', 'answered'].includes(job.status)} />
         {job.status === 'accepted' && (() => {
           const payment = finance?.requests.find((item) => item.request_id === job.request_id) ?? null;
-          const blocked = payment?.state === 'quoted';
+          const blocked = payment?.state === 'quoted' || (job.category_code === 'building' && (!buildingFinancialJourneyEnabled() || payment?.state !== 'reserved'));
           return <div>
             {payment?.expert_rate_per_minute_cents != null && <p className="offer-expiry">Rémunération : {(payment.expert_rate_per_minute_cents / 100).toFixed(2)} €/min · {payment.reserved_minutes ?? '?'} min réservées</p>}
             <div className="button-row">

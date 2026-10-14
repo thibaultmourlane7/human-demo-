@@ -10,6 +10,7 @@ import type {
   HumanCategory,
   HumanTopup,
 } from '../domain/request';
+import { buildingExpertWorkflowEnabled } from '../features/buildingExperts';
 
 const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -34,6 +35,23 @@ async function command<T>(session: Session, action: string, payload: Record<stri
   return body.data;
 }
 
+export interface HumanBuildingExpertTrade {
+  trade_code: string;
+  label: string;
+  verified: boolean;
+  declared_at: string;
+}
+export interface HumanBuildingAdminTrade extends HumanBuildingExpertTrade {
+  expert_id: string;
+  expert_name: string | null;
+  profession: string;
+  expert_verified: boolean;
+}
+function buildingExpertCommand<T>(session: Session, action: string, payload: Record<string,unknown> = {}): Promise<T> {
+  if (!buildingExpertWorkflowEnabled()) throw new Error('BUILDING_EXPERT_WORKFLOW_DISABLED');
+  return command<T>(session, action, payload);
+}
+
 export const humanApi = {
   bootstrapAccount: (session: Session, input: { role: 'user' | 'expert'; firstName?: string; lastName?: string }) =>
     command(session, 'bootstrap_account', input),
@@ -56,6 +74,20 @@ export const humanApi = {
     languages: string[];
     specialties: string[];
   }) => command(session, 'save_expert_profile', input),
+
+  declareBuildingTrades: (session: Session, tradeCodes: string[]) =>
+    buildingExpertCommand<{expert_id:string;declared_trades:Array<{trade_code:string;verified:boolean}>;admin_review_required:true}>(
+      session,'declare_building_trades',{tradeCodes}),
+
+  getMyBuildingTrades: (session: Session) =>
+    buildingExpertCommand<HumanBuildingExpertTrade[]>(session,'get_my_building_trades'),
+
+  adminListBuildingTrades: (session: Session) =>
+    buildingExpertCommand<HumanBuildingAdminTrade[]>(session,'admin_list_building_trades'),
+
+  adminReviewBuildingTrade: (session: Session, expertId: string, tradeCode: string, approve: boolean, reason?: string) =>
+    buildingExpertCommand<{expert_id:string;trade_code:string;verified:boolean;unchanged:boolean}>(
+      session,'admin_review_building_trade',{expertId,tradeCode,approve,reason:reason??null}),
 
   setExpertAvailability: (session: Session, available: boolean) =>
     command(session, 'set_expert_availability', { available }),

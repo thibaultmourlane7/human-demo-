@@ -8,6 +8,7 @@ import type {
 } from '../domain/request';
 import { humanApi } from '../services/humanApi';
 import { MessageThread } from './MessageThread';
+import { BuildingTradeAdmin } from './BuildingTradeAdmin';
 
 interface Props {
   session: Session;
@@ -186,6 +187,8 @@ export function AdminArea({ session }: Props) {
         </article>)}
       </div>
     </div>
+
+    <BuildingTradeAdmin session={session} />
 
     <div className="panel admin-requests">
       <div className="panel-heading"><div><p className="eyebrow">Mission watch</p><h2>Missions récentes</h2></div><span className="count-pill">{data.requests.length}</span></div>

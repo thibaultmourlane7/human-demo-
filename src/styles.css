@@ -466,3 +466,16 @@ footer {
   .topup-custom { grid-template-columns:1fr; }
   .topup-row { align-items:flex-start; }
 }
+
+/* HUMAN Sprint 12 — PWA install helper, responsive */
+.pwa-install{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;margin:8px auto 16px;max-width:1200px;border:1px solid var(--line);background:#fff;font-weight:650}
+.pwa-install button{flex-shrink:0}
+@media(max-width:600px){.pwa-install{flex-direction:column;align-items:stretch}.pwa-install button{width:100%}}
+
+/* Sprint 12: protected local building intake preview */
+.building-intake{grid-column:1/-1;padding:24px}
+.building-intake form{display:grid;gap:14px}
+.building-intake label{display:grid;gap:6px}
+.building-intake-ready{padding:14px;background:#f2f8e9;border:1px solid #6d9145;font-weight:700}
+.building-intake textarea{max-width:100%}
+@media(max-width:600px){.building-intake{padding:16px}.building-intake button{min-height:44px}.building-intake input,.building-intake textarea,.building-intake select{font-size:16px}}
