@@ -10,11 +10,12 @@ interface Props {
   onRefresh: () => Promise<void>;
 }
 
-const categoryLabel: Partial<Record<HumanCategory, string>> = {
+const categoryLabel: Record<HumanCategory, string> = {
   legal: 'Droit français',
   accounting: 'Comptabilité',
   tax: 'Fiscalité',
   development: 'Développement logiciel',
+  building: 'Bâtiment',
 };
 
 const topupStatusLabel: Record<string, string> = {
@@ -33,7 +34,7 @@ function euros(cents: number, currency = 'EUR') {
 }
 
 export function FinancePanel({ session, finance, role, onRefresh }: Props) {
-  const [category, setCategory] = useState<Exclude<HumanCategory, 'building'>>('legal');
+  const [category, setCategory] = useState<HumanCategory>('legal');
   const [clientRate, setClientRate] = useState('1.00');
   const [expertRate, setExpertRate] = useState('0.70');
   const [blockMinutes, setBlockMinutes] = useState('10');
@@ -197,17 +198,29 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
         <div className="finance-card">
           <h3>Tarification à la minute</h3>
           <label>Domaine
-            <select value={category} onChange={(e) => setCategory(e.target.value as Exclude<HumanCategory, 'building'>)}>
+            <select value={category} onChange={(e) => {
+              const next = e.target.value as HumanCategory;
+              setCategory(next);
+              // No invented rate for the Bâtiment category; admin must enter both values.
+              if (next === 'building') { setClientRate(''); setExpertRate(''); }
+              else if (category === 'building') { setClientRate('1.00'); setExpertRate('0.70'); }
+            }}>
               {Object.entries(categoryLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
           </label>
+          {category === 'building' && <p className="muted" role="status">
+            Aucun tarif Bâtiment prédéfini. Indiquez un tarif client et une rémunération expert
+            validés avant d’enregistrer. Cela n’active pas les paiements ni les mises en relation.
+          </p>}
           <div className="finance-fields">
             <label>Client €/min<input type="number" min="0.01" step="0.01" value={clientRate} onChange={(e) => setClientRate(e.target.value)} /></label>
             <label>Expert €/min<input type="number" min="0" step="0.01" value={expertRate} onChange={(e) => setExpertRate(e.target.value)} /></label>
             <label>Bloc minimum (min)<input type="number" min="1" max="120" step="1" value={blockMinutes} onChange={(e) => setBlockMinutes(e.target.value)} /></label>
             <label>Urgence ×<input type="number" min="1" max="3" step="0.05" value={urgentMultiplier} onChange={(e) => setUrgentMultiplier(e.target.value)} /></label>
           </div>
-          <button className="primary-button" disabled={busy} onClick={() => void run(() => humanApi.setAdminPricingPolicy(session, {
+          <button className="primary-button" disabled={busy || !clientRate.trim() || !expertRate.trim()
+            || !(Number(clientRate) > 0) || !(Number(expertRate) >= 0)
+            || Number(expertRate) > Number(clientRate)} onClick={() => void run(() => humanApi.setAdminPricingPolicy(session, {
             categoryCode: category,
             clientRatePerMinuteCents: Math.round(Number(clientRate) * 100),
             expertRatePerMinuteCents: Math.round(Number(expertRate) * 100),
