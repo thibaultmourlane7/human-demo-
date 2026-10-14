@@ -124,50 +124,63 @@ export default function App() {
     <header className="topbar">
       <div className="brand-lockup">
         <div className="brand-mark" aria-hidden="true"><span>H</span><i /></div>
-        <div className="brand-copy"><strong>HUMAN</strong><span>Human fallback infrastructure</span></div>
+        <div className="brand-copy"><strong>HUMAN</strong><span>Expertise bâtiment</span></div>
       </div>
       {session && <div className="top-actions"><span>{session.user.email}</span><button className="secondary-button" onClick={() => supabase.auth.signOut()}>Déconnexion</button></div>}
     </header>
     <PwaInstallPanel />
 
-    <section className="hero compact-hero human-hero">
-      <div className="hero-copy">
-        <div className="hero-badge">HUMAN / SIGNAL 09</div>
-        <h1>L’IA bloque.<br/><span>Un humain prend le relais.</span></h1>
-        <p>Une infrastructure qui connecte les intelligences artificielles à des experts qualifiés quand la certitude ne suffit plus.</p>
-        <div className="relay-strip" aria-label="Flux HUMAN">
-          <span>AI</span><b>→</b><span className="fault">?</span><b>→</b><span className="human-node">HUMAN</span><b>→</b><span>EXPERT</span>
+    <section className={session ? 'building-home building-home--connected' : 'building-home'} aria-label="Accueil HUMAN Bâtiment">
+      <div className="building-home-copy">
+        <span className="building-kicker">HUMAN BÂTIMENT · CONSULTATION D’EXPERTS</span>
+        <h1>{session ? <>Votre espace <span>Bâtiment.</span></> : <>Une question de chantier ? <span>Un expert du bâtiment vous accompagne.</span></>}</h1>
+        <p>{session
+          ? 'Retrouvez vos dossiers et vos outils ci-dessous. Les consultations payantes Bâtiment ne sont pas encore activées.'
+          : 'Couverture, maçonnerie, électricité, plomberie… Préparez votre dossier, puis faites intervenir un professionnel qualifié lorsque le service est disponible.'}</p>
+        <div className="building-home-tags" aria-label="Domaines concernés">
+          <span>12 métiers</span><span>Dossiers artisans</span><span>Experts vérifiés</span>
         </div>
+        <a className="building-home-link" href={session ? '#human-workspace' : '#human-signin'}>
+          {session ? 'Accéder à mon espace' : 'Accéder à HUMAN'} <span aria-hidden="true">↗</span>
+        </a>
       </div>
-      <div className="signal-stage" aria-hidden="true">
-        <div className="signal-grid" />
-        <div className="signal-ring ring-a" />
-        <div className="signal-ring ring-b" />
-        <div className="signal-ring ring-c" />
-        <div className="signal-core"><span>H</span><small>LIVE</small></div>
-        <div className="signal-caption"><span>ESCALATION</span><strong>HUMAN<br/>RELAY</strong><em>QUALIFIED / VERIFIED</em></div>
+      <div className="building-home-steps">
+        <p className="building-steps-title">Votre parcours</p>
+        <ol>
+          <li><strong>01</strong><span>Choisissez le métier et décrivez votre problème.</span></li>
+          <li><strong>02</strong><span>Ajoutez les informations utiles au dossier.</span></li>
+          <li><strong>03</strong><span>Un expert qualifié pourra intervenir après validation du devis et des crédits.</span></li>
+        </ol>
+        <p className="building-preview-note">Bâtiment : phase de test, aucune consultation payante lancée automatiquement.</p>
       </div>
     </section>
+    {session && <nav className="building-quicknav" aria-label="Navigation rapide">
+      <a href="#human-workspace">{dashboard?.profile?.role === 'admin' ? 'Administration' : dashboard?.profile?.role === 'expert' ? 'Mon espace expert' : 'Mes dossiers'}</a>
+      <a href="#human-finance">Crédits et tarifs</a>
+    </nav>}
 
-    {!session ? <AuthPanel /> : !dashboard ? <section className="panel auth-shell"><div className="spinner" /><p>Chargement de votre espace HUMAN…</p></section> : <>
+    {!session ? <section id="human-signin"><AuthPanel /></section> : !dashboard ? <section className="panel auth-shell"><div className="spinner" /><p>Chargement de votre espace HUMAN…</p></section> : <>
       {error && <div className="error-banner">{error}</div>}
       <section className="account-strip panel">
         <div><p className="eyebrow">Compte</p><h2>{dashboard.profile?.first_name || 'Compte'} {dashboard.profile?.last_name || ''}</h2></div>
         <div className="role-pill">{dashboard.profile?.role === 'expert' ? 'Expert' : dashboard.profile?.role === 'admin' ? 'Admin' : 'Utilisateur'}</div>
       </section>
 
-      <FinancePanel session={session} finance={finance} role={dashboard.profile?.role || 'user'} onRefresh={() => syncFinance(session)} />
-
-      {dashboard.profile?.role === 'admin' ? (
-        <AdminArea session={session} />
-      ) : dashboard.profile?.role === 'expert' ? (
-        <ExpertArea dashboard={dashboard} finance={finance} session={session} busy={busy} run={run} refresh={syncDashboard} refreshFinance={syncFinance} answerDraft={answerDraft} setAnswerDraft={setAnswerDraft} />
-      ) : (
-        <UserArea dashboard={dashboard} finance={finance} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} refreshFinance={syncFinance} refreshDashboard={syncDashboard} setSelected={setSelected} />
-      )}
+      <section id="human-workspace" aria-label="Espace HUMAN">
+        {dashboard.profile?.role === 'admin' ? (
+          <AdminArea session={session} />
+        ) : dashboard.profile?.role === 'expert' ? (
+          <ExpertArea dashboard={dashboard} finance={finance} session={session} busy={busy} run={run} refresh={syncDashboard} refreshFinance={syncFinance} answerDraft={answerDraft} setAnswerDraft={setAnswerDraft} />
+        ) : (
+          <UserArea dashboard={dashboard} finance={finance} busy={busy} createRequest={createRequest} openRequest={openRequest} selected={selected} session={session} run={run} refreshFinance={syncFinance} refreshDashboard={syncDashboard} setSelected={setSelected} />
+        )}
+      </section>
+      <section id="human-finance" aria-label="Crédits et tarification">
+        <FinancePanel session={session} finance={finance} role={dashboard.profile?.role || 'user'} onRefresh={() => syncFinance(session)} />
+      </section>
     </>}
 
-    <footer>HUMAN · infrastructure d’intervention humaine pour agents IA</footer>
+    <footer>HUMAN Bâtiment · Des experts pour les professionnels</footer>
   </main>;
 }
 
