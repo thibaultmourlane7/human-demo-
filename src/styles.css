@@ -479,3 +479,89 @@ footer {
 .building-intake-ready{padding:14px;background:#f2f8e9;border:1px solid #6d9145;font-weight:700}
 .building-intake textarea{max-width:100%}
 @media(max-width:600px){.building-intake{padding:16px}.building-intake button{min-height:44px}.building-intake input,.building-intake textarea,.building-intake select{font-size:16px}}
+
+
+/* HUMAN Bâtiment — October 2026 mobile-first landing, no oversized legacy hero. */
+.building-home {
+  margin: 24px 0 0;
+  padding: clamp(20px, 3vw, 42px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  align-items: stretch;
+  gap: clamp(18px, 3vw, 38px);
+  background: #e9f1e8;
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.building-home-copy { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.building-kicker {
+  font: 800 11px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .065em; color: var(--ink); text-transform: uppercase;
+  padding: 9px 12px; background: var(--acid); border: 1.5px solid var(--ink);
+}
+.building-home h1 {
+  font-weight: 900; line-height: 1.04; letter-spacing: -.055em;
+  font-size: clamp(35px, 4.2vw, 62px);
+  margin: 22px 0 14px; overflow-wrap: anywhere;
+}
+.building-home h1 span { color: #d74329; }
+.building-home-copy > p { color: #424a41; font-size: clamp(15px, 1.4vw, 18px); line-height: 1.5; max-width: 55ch; margin: 0 0 16px; }
+.building-home-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
+.building-home-tags span { font: 750 11px/1.2 ui-monospace, monospace; border: 1px solid #8d9d8c; background: #fff; padding: 8px 10px; }
+.building-home-link {
+  margin-top: auto; display: inline-flex; gap: 16px; align-items: center;
+  min-height: 44px; padding: 12px 17px; background: var(--ink); color: #fff;
+  text-decoration: none; font-weight: 800; border: 2px solid var(--ink);
+}
+.building-home-link:focus-visible, .building-quicknav a:focus-visible { outline: 3px solid #d74329; outline-offset: 3px; }
+.building-home-link span { font-size: 21px; color: var(--acid); }
+.building-home-steps { min-width: 0; background: var(--ink); color: #fff; padding: clamp(18px, 2.6vw, 30px); display: grid; align-content: center; gap: 17px; }
+.building-steps-title { font: 800 12px/1.2 ui-monospace, monospace; color: var(--acid); margin: 0; text-transform: uppercase; letter-spacing: .08em; }
+.building-home-steps ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 16px; }
+.building-home-steps li { display: grid; grid-template-columns: 38px minmax(0,1fr); align-items: start; gap: 10px; font-size: 14px; line-height: 1.5; }
+.building-home-steps li strong { color: var(--acid); font: 900 16px/1.3 ui-monospace, monospace; }
+.building-preview-note { margin: 2px 0 0; padding-top: 14px; border-top: 1px solid #5d5d59; color: #dadbd0; font-size: 12px; line-height: 1.45; }
+.building-home--connected { padding: 18px 24px; box-shadow: 4px 4px 0 var(--ink); }
+.building-home--connected .building-home-steps, .building-home--connected .building-home-tags { display: none; }
+.building-home--connected h1 { font-size: clamp(28px, 3vw, 40px); margin: 8px 0; }
+.building-home--connected .building-home-copy > p { font-size: 14px; margin: 0 0 10px; }
+.building-home--connected .building-home-link { margin-top: 2px; padding: 8px 12px; min-height: 38px; font-size: 12px; }
+.building-quicknav { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
+.building-quicknav a { display: inline-flex; align-items: center; justify-content: center; padding: 11px 15px; min-height: 44px; border: 1.5px solid var(--ink); color: var(--ink); background: #fff; font-weight: 800; text-decoration: none; }
+.building-quicknav a:first-child { background: var(--acid); }
+#human-workspace, #human-finance, #human-signin { scroll-margin-top: 20px; min-width: 0; }
+#human-workspace > .admin-layout, #human-workspace > .expert-layout { margin-top: 20px; }
+#human-workspace .building-intake { border-left: 5px solid #b7e42d; }
+@media (max-width: 800px) {
+  .building-home { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  main { width: calc(100% - 28px); }
+  .topbar { padding: 11px 0; min-height: 66px; }
+  .brand-mark { width: 42px; height: 42px; }
+  .building-home { padding: 16px; margin-top: 16px; gap: 16px; box-shadow: 4px 4px 0 var(--ink); }
+  .building-home h1 { font-size: clamp(30px, 8.5vw, 40px); line-height: 1.08; letter-spacing: -.045em; margin: 17px 0 13px; }
+  .building-home h1 span { display: block; }
+  .building-home-steps { padding: 17px; }
+  .building-home-steps li { font-size: 13px; }
+  .building-home--connected { padding: 15px; }
+  .building-home--connected h1 { font-size: clamp(26px, 7vw, 33px); margin: 9px 0; }
+  .building-home--connected .building-home-tags { display: none; }
+  .building-home--connected .building-kicker { font-size: 9px; }
+  .building-quicknav { gap: 8px; }
+  .building-quicknav a { flex: 1; font-size: 12px; padding: 10px 8px; }
+  .account-strip { padding: 14px 16px; margin-top: 18px; }
+  .account-strip h2 { font-size: 23px; overflow-wrap: anywhere; }
+  .panel h2 { font-size: clamp(22px, 6vw, 28px); line-height: 1.16; }
+  .admin-console, .admin-experts, .admin-requests, .admin-audit, .admin-request-detail { padding: 16px; }
+  .admin-console h2 { font-size: 28px; }
+  .admin-stat strong { font-size: 34px; }
+  .admin-expert-top h3 { font-size: 20px; }
+  .admin-layout, .workspace, .expert-layout { gap: 14px; }
+  .finance-panel { padding: 16px; }
+  .finance-card { padding: 14px; }
+  .finance-metrics strong { font-size: 20px; }
+  .finance-balance { font-size: 15px; }
+  .building-intake { padding: 16px; }
+  .building-quicknav { position: relative; z-index: 1; }
+}
