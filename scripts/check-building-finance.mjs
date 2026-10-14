@@ -23,5 +23,7 @@ assert.ok(app.includes("job.category_code === 'building' && (!buildingFinancialJ
 assert.ok(app.includes("selected.request.category_code === 'building' && selected.request.status === 'draft' && payment?.state === 'reserved' && buildingFinancialJourneyEnabled()"), 'building match requires explicitly enabled finance, draft and reservation');
 assert.ok(app.includes('Rechercher un expert qualifié'), 'artisans must explicitly start expert matching after reservation');
 assert.ok(request.includes("Exclude<HumanCategory, 'building'>"));
-assert.ok(finance.includes("Exclude<HumanCategory, 'building'>"));
+assert.ok(finance.includes("setCategory(next)"), 'admin price selector must support Bâtiment');
+assert.ok(finance.includes("Aucun tarif Bâtiment prédéfini."), 'no invented price for Bâtiment');
+assert.ok(finance.includes("setClientRate(''); setExpertRate('');"), 'require explicit values for Bâtiment price');
 console.log('OK — Bâtiment pricing, credit reservation and work start are locked until explicit activation.');
