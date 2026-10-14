@@ -1,5 +1,5 @@
 /* HUMAN — offline shell only. NEVER cache private messages, uploads, tokens or API calls. */
-const VERSION='human-batiment-static-v12-2';
+const VERSION='human-batiment-static-v12-3';
 const ROOT=self.registration.scope;
 const SCOPE=new URL(ROOT);
 // Allowlist: only hashed Vite assets and fixed, public branding files.
