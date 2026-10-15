@@ -129,7 +129,10 @@ export function FinancePanel({ session, finance, role, onRefresh }: Props) {
       const checkout = await humanApi.createTopupCheckout(session, amountCents);
       window.location.assign(checkout.checkout_url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossible de créer le paiement Stripe');
+      const message = err instanceof Error ? err.message : '';
+      setError(/STRIPE_CHECKOUT_FAILED|STRIPE_INVALID_SERVER_KEY|STRIPE_NOT_CONFIGURED/.test(message)
+        ? 'Recharge temporairement indisponible : la clé secrète Stripe du serveur HUMAN doit être corrigée dans Supabase. Aucun paiement n’a été effectué.'
+        : message || 'Impossible de créer le paiement Stripe');
       setTopupBusy(false);
     }
   }
