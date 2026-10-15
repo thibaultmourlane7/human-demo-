@@ -1,4 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
+import {supabase} from '../lib/supabase';
 
 const supabaseUrl=import.meta.env.VITE_SUPABASE_URL as string;
 const publishableKey=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -59,15 +60,23 @@ export interface AdminPayoutOverview {
 async function connectCommand<T>(
   session:Session, action:string, payload:Record<string,unknown>={},
 ):Promise<T> {
-  const res=await fetch(supabaseUrl+'/functions/v1/human-connect',{
+  const send=(accessToken:string)=>fetch(supabaseUrl+'/functions/v1/human-connect',{
     method:'POST',
     headers:{
-      Authorization:'Bearer '+session.access_token,
+      Authorization:'Bearer '+accessToken,
       apikey:publishableKey,
       'Content-Type':'application/json',
     },
     body:JSON.stringify({action,payload}),
   });
+  let res=await send(session.access_token);
+  if(res.status===401){
+    const {data,error}=await supabase.auth.refreshSession();
+    const refreshedToken=data.session?.access_token;
+    if(!error&&refreshedToken&&refreshedToken!==session.access_token){
+      res=await send(refreshedToken);
+    }
+  }
   const json=await res.json() as {ok:boolean;data?:T;error?:string};
   if (!res.ok || !json.ok || json.data===undefined) {
     throw new Error(json.error ?? 'CONNECT_API_FAILED');
