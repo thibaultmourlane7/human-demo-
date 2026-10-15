@@ -3,6 +3,7 @@
  * migrations and the human-building Edge Function are deployed and verified.
  */
 import type { Session } from '@supabase/supabase-js';
+import {supabase} from '../lib/supabase';
 
 const url=import.meta.env.VITE_SUPABASE_URL as string|undefined;
 const publishableKey=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string|undefined;
@@ -29,16 +30,24 @@ export async function createBuildingDraft(
   throw new Error('API_BATIMENT_NON_ACTIVEE');
  }
  if(!url||!publishableKey)throw new Error('CONFIGURATION_MANQUANTE');
- const response=await fetch(url+'/functions/v1/human-building',{
+ const send=(accessToken:string)=>fetch(url+'/functions/v1/human-building',{
   method:'POST',
   cache:'no-store',
   headers:{
-   Authorization:'Bearer '+session.access_token,
+   Authorization:'Bearer '+accessToken,
    apikey:publishableKey,
    'Content-Type':'application/json',
   },
   body:JSON.stringify({action:'create_draft',...draft}),
  });
+ let response=await send(session.access_token);
+ if(response.status===401){
+  const {data,error}=await supabase.auth.refreshSession();
+  const refreshedToken=data.session?.access_token;
+  if(!error&&refreshedToken&&refreshedToken!==session.access_token){
+   response=await send(refreshedToken);
+  }
+ }
  let parsed:unknown;
  try { parsed=await response.json(); } catch { throw new Error('REPONSE_API_INVALIDE'); }
  if(!response.ok||!parsed||typeof parsed!=='object'
