@@ -77,11 +77,11 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
        onChange={event=>{setContext(event.target.value);setPrepared(false);setSavedId(null)}}
        placeholder="Nature des travaux, âge du bâtiment, contraintes connues…" />
     </label>
-    <label>Photos et PDF (facultatif — ${uploadEnabled?'à joindre après enregistrement':'sélection locale uniquement'})
+    <label>Photos et PDF (facultatif — {uploadEnabled?'à joindre après enregistrement':'sélection locale uniquement'})
       <input disabled={saving||!!savedId} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple
        onChange={onFiles} aria-describedby="building-attachments-hint" />
     </label>
-    <p className="muted" id="building-attachments-hint">Jusqu’à cinq fichiers de 10 Mo. ${uploadEnabled
+    <p className="muted" id="building-attachments-hint">Jusqu’à cinq fichiers de 10 Mo. {uploadEnabled
       ? 'Après enregistrement du dossier, vous pourrez les transférer séparément dans l’espace sécurisé.'
       : 'Le transfert des pièces jointes n’est pas encore activé : les fichiers sélectionnés resteront uniquement sur cet appareil et ne feront pas partie du dossier enregistré.'}</p>
     {files.length>0&&<ul>{files.map((file,index)=><li key={index}>{file.name} — {file.size<1048576?(file.size/1024).toFixed(0)+' Ko':(file.size/1048576).toFixed(1)+' Mo'}</li>)}</ul>}
