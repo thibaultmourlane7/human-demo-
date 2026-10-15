@@ -11,6 +11,7 @@ import type {
   HumanTopup,
 } from '../domain/request';
 import { buildingExpertWorkflowEnabled } from '../features/buildingExperts';
+import { supabase } from '../lib/supabase';
 
 const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -18,15 +19,24 @@ const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 type ApiEnvelope<T> = { ok: true; action: string; data: T } | { ok: false; error: string; action?: string };
 
 async function command<T>(session: Session, action: string, payload: Record<string, unknown> = {}): Promise<T> {
-  const res = await fetch(`${baseUrl}/functions/v1/human-command`, {
+  const send = (accessToken: string) => fetch(`${baseUrl}/functions/v1/human-command`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${accessToken}`,
       apikey: publishableKey,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ action, payload }),
   });
+
+  let res = await send(session.access_token);
+  if (res.status === 401) {
+    const { data, error } = await supabase.auth.refreshSession();
+    const refreshedToken = data.session?.access_token;
+    if (!error && refreshedToken && refreshedToken !== session.access_token) {
+      res = await send(refreshedToken);
+    }
+  }
 
   const body = await res.json() as ApiEnvelope<T>;
   if (!res.ok || !body.ok) {
