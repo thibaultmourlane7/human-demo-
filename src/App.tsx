@@ -204,10 +204,13 @@ function UserArea({ dashboard, finance, busy, createRequest, openRequest, select
 
   return <section className="workspace live-workspace">
     {import.meta.env.VITE_HUMAN_BUILDING_PREVIEW === 'true' && <BuildingIntakeDraft session={session} onSaved={async () => { await Promise.all([refreshDashboard(session), refreshFinance(session)]); }} />}
-    <div className="panel form-panel">
-      <div className="panel-heading"><div><p className="eyebrow">Nouvelle mission</p><h2>Demander un expert</h2></div><span className="demo-pill live-pill">Connecté</span></div>
-      <RequestForm onSubmit={createRequest} disabled={busy} />
-    </div>
+    <details className="legacy-request-accordion panel">
+      <summary>Autres domaines de consultation <span>Droit, comptabilité, fiscalité et informatique</span></summary>
+      <div className="legacy-request-content">
+        <div className="panel-heading"><div><p className="eyebrow">Autres domaines</p><h2>Demander un expert hors bâtiment</h2></div><span className="demo-pill live-pill">Connecté</span></div>
+        <RequestForm onSubmit={createRequest} disabled={busy} />
+      </div>
+    </details>
     <aside className="panel status-panel">
       <p className="eyebrow">Mes missions</p>
       <div className="mission-list">
