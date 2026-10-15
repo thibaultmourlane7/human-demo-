@@ -13,6 +13,7 @@ const MAX_FILE_BYTES=10*1024*1024;
 const MAX_FILES=5;
 
 export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:()=>Promise<void>}) {
+ const uploadEnabled=import.meta.env.VITE_HUMAN_BUILDING_UPLOAD_ENABLED==='true';
  const [tradeCode,setTradeCode]=useState('');
  const [question,setQuestion]=useState('');
  const [context,setContext]=useState('');
@@ -58,8 +59,7 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
  return <section className="panel building-intake" aria-label="Préparer une demande d’expert du bâtiment">
    <p className="eyebrow">HUMAN Bâtiment — Aperçu du futur parcours</p>
    <h2>Préparer un dossier de consultation</h2>
-   <p className="muted">Ce formulaire prépare le dossier dans votre navigateur. L’enregistrement d’un brouillon,
-   lorsqu’il sera activé, ne déclenchera ni mise en relation ni dépense.</p>
+   <p className="muted">Décrivez votre demande pour créer un dossier HUMAN Bâtiment. Aucun devis payant ni mise en relation automatique n’est lancé à cette étape.</p>
    <form onSubmit={prepare}>
     <label>Métier concerné
       <select required disabled={saving} value={tradeCode} onChange={event=>{setTradeCode(event.target.value);setPrepared(false);setSavedId(null)}}>
@@ -77,13 +77,14 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
        onChange={event=>{setContext(event.target.value);setPrepared(false);setSavedId(null)}}
        placeholder="Nature des travaux, âge du bâtiment, contraintes connues…" />
     </label>
-    <label>Photos et PDF (facultatif, conservation locale uniquement)
+    <label>Photos et PDF (facultatif — ${uploadEnabled?'à joindre après enregistrement':'sélection locale uniquement'})
       <input disabled={saving||!!savedId} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" multiple
        onChange={onFiles} aria-describedby="building-attachments-hint" />
     </label>
-    <p className="muted" id="building-attachments-hint">Jusqu'à cinq fichiers de 10 Mo.
-     Les fichiers ne sont ni envoyés ni conservés par HUMAN à cette étape.</p>
-    {files.length>0&&<ul>{files.map((file,index)=><li key={index}>{file.name} — {(file.size/1048576).toFixed(1)} Mo</li>)}</ul>}
+    <p className="muted" id="building-attachments-hint">Jusqu’à cinq fichiers de 10 Mo. ${uploadEnabled
+      ? 'Après enregistrement du dossier, vous pourrez les transférer séparément dans l’espace sécurisé.'
+      : 'Le transfert des pièces jointes n’est pas encore activé : les fichiers sélectionnés resteront uniquement sur cet appareil et ne feront pas partie du dossier enregistré.'}</p>
+    {files.length>0&&<ul>{files.map((file,index)=><li key={index}>{file.name} — {file.size<1048576?(file.size/1024).toFixed(0)+' Ko':(file.size/1048576).toFixed(1)+' Mo'}</li>)}</ul>}
     {error&&<p role="alert" className="error-banner">{error}</p>}
     <button className="secondary-button" type="submit">Vérifier le brouillon</button>
     {prepared&&<p role="status" className="building-intake-ready">
@@ -91,11 +92,12 @@ export function BuildingIntakeDraft({session,onSaved}:{session:Session;onSaved?:
     {prepared && import.meta.env.VITE_HUMAN_BUILDING_API_ENABLED === 'true' &&
       <button className="secondary-button" type="button" disabled={saving||!!savedId}
        onClick={()=>void saveDraft()}>
-       {saving?'Enregistrement…':'Enregistrer le brouillon (sans fichiers)'}
+       {saving?'Enregistrement…':'Enregistrer le dossier (sans fichiers)'}
       </button>}
     {savedId&&<p role="status" className="building-intake-ready">
       Brouillon enregistré sous la référence {savedId}. Aucun transfert automatique, aucun expert contacté, aucun crédit débité.
     </p>}
+    {savedId&&files.length>0&&!uploadEnabled&&<p className="notice" role="status">Les {files.length} pièce(s) sélectionnée(s) ne sont pas enregistrée(s) avec ce dossier. Conservez-les sur votre appareil jusqu’à l’activation de l’envoi sécurisé.</p>}
     {savedId&&<BuildingAttachments key={savedId} requestId={savedId} canUpload initialFiles={files} />}
    </form>
  </section>;
